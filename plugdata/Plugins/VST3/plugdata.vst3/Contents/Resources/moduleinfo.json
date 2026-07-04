@@ -1,0 +1,46 @@
+{
+  "Name": "plugdata",
+  "Version": "0.9.4",
+  "Factory Info": {
+    "Vendor": "plugdata",
+    "URL": "plugdata.org",
+    "E-Mail": "",
+    "Flags": {
+      "Unicode": true,
+      "Classes Discardable": false,
+      "Component Non Discardable": false,
+    },
+  },
+  "Classes": [
+    {
+      "CID": "ABCDEF019182FAEB506C44745064496E",
+      "Category": "Audio Module Class",
+      "Name": "plugdata",
+      "Vendor": "plugdata",
+      "Version": "0.9.4",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Instrument",
+      ],
+      "Class Flags": 2,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+    {
+      "CID": "ABCDEF011234ABCD506C44745064496E",
+      "Category": "Component Controller Class",
+      "Name": "plugdata",
+      "Vendor": "plugdata",
+      "Version": "0.9.4",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Instrument",
+      ],
+      "Class Flags": 2,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+  ],
+}

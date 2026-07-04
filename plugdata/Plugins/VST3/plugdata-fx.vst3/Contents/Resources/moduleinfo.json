@@ -1,0 +1,46 @@
+{
+  "Name": "plugdata-fx",
+  "Version": "0.9.4",
+  "Factory Info": {
+    "Vendor": "plugdata",
+    "URL": "plugdata.org",
+    "E-Mail": "",
+    "Flags": {
+      "Unicode": true,
+      "Classes Discardable": false,
+      "Component Non Discardable": false,
+    },
+  },
+  "Classes": [
+    {
+      "CID": "ABCDEF019182FAEB506C447450644678",
+      "Category": "Audio Module Class",
+      "Name": "plugdata-fx",
+      "Vendor": "plugdata",
+      "Version": "0.9.4",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Fx",
+      ],
+      "Class Flags": 0,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+    {
+      "CID": "ABCDEF011234ABCD506C447450644678",
+      "Category": "Component Controller Class",
+      "Name": "plugdata-fx",
+      "Vendor": "plugdata",
+      "Version": "0.9.4",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Fx",
+      ],
+      "Class Flags": 0,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+  ],
+}

@@ -1,0 +1,5903 @@
+@prefix atom:  <http://lv2plug.in/ns/ext/atom#> .
+@prefix bufs:  <http://lv2plug.in/ns/ext/buf-size#> .
+@prefix doap:  <http://usefulinc.com/ns/doap#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
+@prefix midi:  <http://lv2plug.in/ns/ext/midi#> .
+@prefix opts:  <http://lv2plug.in/ns/ext/options#> .
+@prefix param: <http://lv2plug.in/ns/ext/parameters#> .
+@prefix patch: <http://lv2plug.in/ns/ext/patch#> .
+@prefix pg:    <http://lv2plug.in/ns/ext/port-groups#> .
+@prefix plug:  <https://github.com/timothyschoen/plugdata:> .
+@prefix pprop: <http://lv2plug.in/ns/ext/port-props#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rsz:   <http://lv2plug.in/ns/ext/resize-port#> .
+@prefix state: <http://lv2plug.in/ns/ext/state#> .
+@prefix time:  <http://lv2plug.in/ns/ext/time#> .
+@prefix ui:    <http://lv2plug.in/ns/extensions/ui#> .
+@prefix units: <http://lv2plug.in/ns/extensions/units#> .
+@prefix urid:  <http://lv2plug.in/ns/ext/urid#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+
+plug:volume
+	a lv2:Parameter ;
+	rdfs:label "volume" ;
+	rdfs:range atom:Float ;
+	lv2:default 0.8 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param1
+	a lv2:Parameter ;
+	rdfs:label "param1" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param2
+	a lv2:Parameter ;
+	rdfs:label "param2" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param3
+	a lv2:Parameter ;
+	rdfs:label "param3" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param4
+	a lv2:Parameter ;
+	rdfs:label "param4" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param5
+	a lv2:Parameter ;
+	rdfs:label "param5" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param6
+	a lv2:Parameter ;
+	rdfs:label "param6" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param7
+	a lv2:Parameter ;
+	rdfs:label "param7" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param8
+	a lv2:Parameter ;
+	rdfs:label "param8" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param9
+	a lv2:Parameter ;
+	rdfs:label "param9" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param10
+	a lv2:Parameter ;
+	rdfs:label "param10" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param11
+	a lv2:Parameter ;
+	rdfs:label "param11" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param12
+	a lv2:Parameter ;
+	rdfs:label "param12" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param13
+	a lv2:Parameter ;
+	rdfs:label "param13" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param14
+	a lv2:Parameter ;
+	rdfs:label "param14" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param15
+	a lv2:Parameter ;
+	rdfs:label "param15" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param16
+	a lv2:Parameter ;
+	rdfs:label "param16" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param17
+	a lv2:Parameter ;
+	rdfs:label "param17" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param18
+	a lv2:Parameter ;
+	rdfs:label "param18" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param19
+	a lv2:Parameter ;
+	rdfs:label "param19" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param20
+	a lv2:Parameter ;
+	rdfs:label "param20" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param21
+	a lv2:Parameter ;
+	rdfs:label "param21" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param22
+	a lv2:Parameter ;
+	rdfs:label "param22" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param23
+	a lv2:Parameter ;
+	rdfs:label "param23" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param24
+	a lv2:Parameter ;
+	rdfs:label "param24" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param25
+	a lv2:Parameter ;
+	rdfs:label "param25" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param26
+	a lv2:Parameter ;
+	rdfs:label "param26" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param27
+	a lv2:Parameter ;
+	rdfs:label "param27" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param28
+	a lv2:Parameter ;
+	rdfs:label "param28" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param29
+	a lv2:Parameter ;
+	rdfs:label "param29" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param30
+	a lv2:Parameter ;
+	rdfs:label "param30" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param31
+	a lv2:Parameter ;
+	rdfs:label "param31" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param32
+	a lv2:Parameter ;
+	rdfs:label "param32" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param33
+	a lv2:Parameter ;
+	rdfs:label "param33" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param34
+	a lv2:Parameter ;
+	rdfs:label "param34" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param35
+	a lv2:Parameter ;
+	rdfs:label "param35" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param36
+	a lv2:Parameter ;
+	rdfs:label "param36" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param37
+	a lv2:Parameter ;
+	rdfs:label "param37" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param38
+	a lv2:Parameter ;
+	rdfs:label "param38" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param39
+	a lv2:Parameter ;
+	rdfs:label "param39" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param40
+	a lv2:Parameter ;
+	rdfs:label "param40" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param41
+	a lv2:Parameter ;
+	rdfs:label "param41" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param42
+	a lv2:Parameter ;
+	rdfs:label "param42" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param43
+	a lv2:Parameter ;
+	rdfs:label "param43" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param44
+	a lv2:Parameter ;
+	rdfs:label "param44" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param45
+	a lv2:Parameter ;
+	rdfs:label "param45" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param46
+	a lv2:Parameter ;
+	rdfs:label "param46" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param47
+	a lv2:Parameter ;
+	rdfs:label "param47" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param48
+	a lv2:Parameter ;
+	rdfs:label "param48" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param49
+	a lv2:Parameter ;
+	rdfs:label "param49" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param50
+	a lv2:Parameter ;
+	rdfs:label "param50" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param51
+	a lv2:Parameter ;
+	rdfs:label "param51" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param52
+	a lv2:Parameter ;
+	rdfs:label "param52" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param53
+	a lv2:Parameter ;
+	rdfs:label "param53" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param54
+	a lv2:Parameter ;
+	rdfs:label "param54" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param55
+	a lv2:Parameter ;
+	rdfs:label "param55" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param56
+	a lv2:Parameter ;
+	rdfs:label "param56" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param57
+	a lv2:Parameter ;
+	rdfs:label "param57" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param58
+	a lv2:Parameter ;
+	rdfs:label "param58" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param59
+	a lv2:Parameter ;
+	rdfs:label "param59" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param60
+	a lv2:Parameter ;
+	rdfs:label "param60" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param61
+	a lv2:Parameter ;
+	rdfs:label "param61" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param62
+	a lv2:Parameter ;
+	rdfs:label "param62" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param63
+	a lv2:Parameter ;
+	rdfs:label "param63" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param64
+	a lv2:Parameter ;
+	rdfs:label "param64" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param65
+	a lv2:Parameter ;
+	rdfs:label "param65" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param66
+	a lv2:Parameter ;
+	rdfs:label "param66" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param67
+	a lv2:Parameter ;
+	rdfs:label "param67" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param68
+	a lv2:Parameter ;
+	rdfs:label "param68" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param69
+	a lv2:Parameter ;
+	rdfs:label "param69" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param70
+	a lv2:Parameter ;
+	rdfs:label "param70" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param71
+	a lv2:Parameter ;
+	rdfs:label "param71" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param72
+	a lv2:Parameter ;
+	rdfs:label "param72" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param73
+	a lv2:Parameter ;
+	rdfs:label "param73" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param74
+	a lv2:Parameter ;
+	rdfs:label "param74" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param75
+	a lv2:Parameter ;
+	rdfs:label "param75" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param76
+	a lv2:Parameter ;
+	rdfs:label "param76" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param77
+	a lv2:Parameter ;
+	rdfs:label "param77" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param78
+	a lv2:Parameter ;
+	rdfs:label "param78" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param79
+	a lv2:Parameter ;
+	rdfs:label "param79" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param80
+	a lv2:Parameter ;
+	rdfs:label "param80" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param81
+	a lv2:Parameter ;
+	rdfs:label "param81" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param82
+	a lv2:Parameter ;
+	rdfs:label "param82" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param83
+	a lv2:Parameter ;
+	rdfs:label "param83" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param84
+	a lv2:Parameter ;
+	rdfs:label "param84" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param85
+	a lv2:Parameter ;
+	rdfs:label "param85" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param86
+	a lv2:Parameter ;
+	rdfs:label "param86" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param87
+	a lv2:Parameter ;
+	rdfs:label "param87" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param88
+	a lv2:Parameter ;
+	rdfs:label "param88" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param89
+	a lv2:Parameter ;
+	rdfs:label "param89" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param90
+	a lv2:Parameter ;
+	rdfs:label "param90" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param91
+	a lv2:Parameter ;
+	rdfs:label "param91" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param92
+	a lv2:Parameter ;
+	rdfs:label "param92" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param93
+	a lv2:Parameter ;
+	rdfs:label "param93" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param94
+	a lv2:Parameter ;
+	rdfs:label "param94" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param95
+	a lv2:Parameter ;
+	rdfs:label "param95" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param96
+	a lv2:Parameter ;
+	rdfs:label "param96" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param97
+	a lv2:Parameter ;
+	rdfs:label "param97" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param98
+	a lv2:Parameter ;
+	rdfs:label "param98" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param99
+	a lv2:Parameter ;
+	rdfs:label "param99" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param100
+	a lv2:Parameter ;
+	rdfs:label "param100" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param101
+	a lv2:Parameter ;
+	rdfs:label "param101" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param102
+	a lv2:Parameter ;
+	rdfs:label "param102" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param103
+	a lv2:Parameter ;
+	rdfs:label "param103" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param104
+	a lv2:Parameter ;
+	rdfs:label "param104" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param105
+	a lv2:Parameter ;
+	rdfs:label "param105" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param106
+	a lv2:Parameter ;
+	rdfs:label "param106" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param107
+	a lv2:Parameter ;
+	rdfs:label "param107" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param108
+	a lv2:Parameter ;
+	rdfs:label "param108" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param109
+	a lv2:Parameter ;
+	rdfs:label "param109" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param110
+	a lv2:Parameter ;
+	rdfs:label "param110" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param111
+	a lv2:Parameter ;
+	rdfs:label "param111" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param112
+	a lv2:Parameter ;
+	rdfs:label "param112" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param113
+	a lv2:Parameter ;
+	rdfs:label "param113" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param114
+	a lv2:Parameter ;
+	rdfs:label "param114" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param115
+	a lv2:Parameter ;
+	rdfs:label "param115" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param116
+	a lv2:Parameter ;
+	rdfs:label "param116" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param117
+	a lv2:Parameter ;
+	rdfs:label "param117" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param118
+	a lv2:Parameter ;
+	rdfs:label "param118" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param119
+	a lv2:Parameter ;
+	rdfs:label "param119" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param120
+	a lv2:Parameter ;
+	rdfs:label "param120" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param121
+	a lv2:Parameter ;
+	rdfs:label "param121" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param122
+	a lv2:Parameter ;
+	rdfs:label "param122" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param123
+	a lv2:Parameter ;
+	rdfs:label "param123" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param124
+	a lv2:Parameter ;
+	rdfs:label "param124" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param125
+	a lv2:Parameter ;
+	rdfs:label "param125" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param126
+	a lv2:Parameter ;
+	rdfs:label "param126" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param127
+	a lv2:Parameter ;
+	rdfs:label "param127" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param128
+	a lv2:Parameter ;
+	rdfs:label "param128" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param129
+	a lv2:Parameter ;
+	rdfs:label "param129" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param130
+	a lv2:Parameter ;
+	rdfs:label "param130" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param131
+	a lv2:Parameter ;
+	rdfs:label "param131" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param132
+	a lv2:Parameter ;
+	rdfs:label "param132" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param133
+	a lv2:Parameter ;
+	rdfs:label "param133" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param134
+	a lv2:Parameter ;
+	rdfs:label "param134" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param135
+	a lv2:Parameter ;
+	rdfs:label "param135" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param136
+	a lv2:Parameter ;
+	rdfs:label "param136" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param137
+	a lv2:Parameter ;
+	rdfs:label "param137" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param138
+	a lv2:Parameter ;
+	rdfs:label "param138" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param139
+	a lv2:Parameter ;
+	rdfs:label "param139" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param140
+	a lv2:Parameter ;
+	rdfs:label "param140" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param141
+	a lv2:Parameter ;
+	rdfs:label "param141" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param142
+	a lv2:Parameter ;
+	rdfs:label "param142" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param143
+	a lv2:Parameter ;
+	rdfs:label "param143" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param144
+	a lv2:Parameter ;
+	rdfs:label "param144" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param145
+	a lv2:Parameter ;
+	rdfs:label "param145" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param146
+	a lv2:Parameter ;
+	rdfs:label "param146" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param147
+	a lv2:Parameter ;
+	rdfs:label "param147" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param148
+	a lv2:Parameter ;
+	rdfs:label "param148" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param149
+	a lv2:Parameter ;
+	rdfs:label "param149" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param150
+	a lv2:Parameter ;
+	rdfs:label "param150" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param151
+	a lv2:Parameter ;
+	rdfs:label "param151" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param152
+	a lv2:Parameter ;
+	rdfs:label "param152" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param153
+	a lv2:Parameter ;
+	rdfs:label "param153" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param154
+	a lv2:Parameter ;
+	rdfs:label "param154" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param155
+	a lv2:Parameter ;
+	rdfs:label "param155" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param156
+	a lv2:Parameter ;
+	rdfs:label "param156" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param157
+	a lv2:Parameter ;
+	rdfs:label "param157" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param158
+	a lv2:Parameter ;
+	rdfs:label "param158" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param159
+	a lv2:Parameter ;
+	rdfs:label "param159" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param160
+	a lv2:Parameter ;
+	rdfs:label "param160" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param161
+	a lv2:Parameter ;
+	rdfs:label "param161" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param162
+	a lv2:Parameter ;
+	rdfs:label "param162" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param163
+	a lv2:Parameter ;
+	rdfs:label "param163" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param164
+	a lv2:Parameter ;
+	rdfs:label "param164" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param165
+	a lv2:Parameter ;
+	rdfs:label "param165" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param166
+	a lv2:Parameter ;
+	rdfs:label "param166" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param167
+	a lv2:Parameter ;
+	rdfs:label "param167" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param168
+	a lv2:Parameter ;
+	rdfs:label "param168" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param169
+	a lv2:Parameter ;
+	rdfs:label "param169" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param170
+	a lv2:Parameter ;
+	rdfs:label "param170" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param171
+	a lv2:Parameter ;
+	rdfs:label "param171" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param172
+	a lv2:Parameter ;
+	rdfs:label "param172" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param173
+	a lv2:Parameter ;
+	rdfs:label "param173" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param174
+	a lv2:Parameter ;
+	rdfs:label "param174" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param175
+	a lv2:Parameter ;
+	rdfs:label "param175" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param176
+	a lv2:Parameter ;
+	rdfs:label "param176" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param177
+	a lv2:Parameter ;
+	rdfs:label "param177" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param178
+	a lv2:Parameter ;
+	rdfs:label "param178" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param179
+	a lv2:Parameter ;
+	rdfs:label "param179" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param180
+	a lv2:Parameter ;
+	rdfs:label "param180" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param181
+	a lv2:Parameter ;
+	rdfs:label "param181" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param182
+	a lv2:Parameter ;
+	rdfs:label "param182" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param183
+	a lv2:Parameter ;
+	rdfs:label "param183" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param184
+	a lv2:Parameter ;
+	rdfs:label "param184" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param185
+	a lv2:Parameter ;
+	rdfs:label "param185" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param186
+	a lv2:Parameter ;
+	rdfs:label "param186" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param187
+	a lv2:Parameter ;
+	rdfs:label "param187" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param188
+	a lv2:Parameter ;
+	rdfs:label "param188" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param189
+	a lv2:Parameter ;
+	rdfs:label "param189" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param190
+	a lv2:Parameter ;
+	rdfs:label "param190" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param191
+	a lv2:Parameter ;
+	rdfs:label "param191" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param192
+	a lv2:Parameter ;
+	rdfs:label "param192" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param193
+	a lv2:Parameter ;
+	rdfs:label "param193" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param194
+	a lv2:Parameter ;
+	rdfs:label "param194" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param195
+	a lv2:Parameter ;
+	rdfs:label "param195" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param196
+	a lv2:Parameter ;
+	rdfs:label "param196" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param197
+	a lv2:Parameter ;
+	rdfs:label "param197" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param198
+	a lv2:Parameter ;
+	rdfs:label "param198" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param199
+	a lv2:Parameter ;
+	rdfs:label "param199" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param200
+	a lv2:Parameter ;
+	rdfs:label "param200" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param201
+	a lv2:Parameter ;
+	rdfs:label "param201" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param202
+	a lv2:Parameter ;
+	rdfs:label "param202" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param203
+	a lv2:Parameter ;
+	rdfs:label "param203" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param204
+	a lv2:Parameter ;
+	rdfs:label "param204" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param205
+	a lv2:Parameter ;
+	rdfs:label "param205" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param206
+	a lv2:Parameter ;
+	rdfs:label "param206" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param207
+	a lv2:Parameter ;
+	rdfs:label "param207" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param208
+	a lv2:Parameter ;
+	rdfs:label "param208" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param209
+	a lv2:Parameter ;
+	rdfs:label "param209" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param210
+	a lv2:Parameter ;
+	rdfs:label "param210" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param211
+	a lv2:Parameter ;
+	rdfs:label "param211" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param212
+	a lv2:Parameter ;
+	rdfs:label "param212" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param213
+	a lv2:Parameter ;
+	rdfs:label "param213" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param214
+	a lv2:Parameter ;
+	rdfs:label "param214" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param215
+	a lv2:Parameter ;
+	rdfs:label "param215" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param216
+	a lv2:Parameter ;
+	rdfs:label "param216" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param217
+	a lv2:Parameter ;
+	rdfs:label "param217" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param218
+	a lv2:Parameter ;
+	rdfs:label "param218" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param219
+	a lv2:Parameter ;
+	rdfs:label "param219" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param220
+	a lv2:Parameter ;
+	rdfs:label "param220" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param221
+	a lv2:Parameter ;
+	rdfs:label "param221" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param222
+	a lv2:Parameter ;
+	rdfs:label "param222" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param223
+	a lv2:Parameter ;
+	rdfs:label "param223" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param224
+	a lv2:Parameter ;
+	rdfs:label "param224" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param225
+	a lv2:Parameter ;
+	rdfs:label "param225" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param226
+	a lv2:Parameter ;
+	rdfs:label "param226" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param227
+	a lv2:Parameter ;
+	rdfs:label "param227" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param228
+	a lv2:Parameter ;
+	rdfs:label "param228" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param229
+	a lv2:Parameter ;
+	rdfs:label "param229" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param230
+	a lv2:Parameter ;
+	rdfs:label "param230" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param231
+	a lv2:Parameter ;
+	rdfs:label "param231" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param232
+	a lv2:Parameter ;
+	rdfs:label "param232" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param233
+	a lv2:Parameter ;
+	rdfs:label "param233" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param234
+	a lv2:Parameter ;
+	rdfs:label "param234" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param235
+	a lv2:Parameter ;
+	rdfs:label "param235" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param236
+	a lv2:Parameter ;
+	rdfs:label "param236" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param237
+	a lv2:Parameter ;
+	rdfs:label "param237" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param238
+	a lv2:Parameter ;
+	rdfs:label "param238" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param239
+	a lv2:Parameter ;
+	rdfs:label "param239" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param240
+	a lv2:Parameter ;
+	rdfs:label "param240" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param241
+	a lv2:Parameter ;
+	rdfs:label "param241" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param242
+	a lv2:Parameter ;
+	rdfs:label "param242" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param243
+	a lv2:Parameter ;
+	rdfs:label "param243" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param244
+	a lv2:Parameter ;
+	rdfs:label "param244" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param245
+	a lv2:Parameter ;
+	rdfs:label "param245" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param246
+	a lv2:Parameter ;
+	rdfs:label "param246" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param247
+	a lv2:Parameter ;
+	rdfs:label "param247" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param248
+	a lv2:Parameter ;
+	rdfs:label "param248" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param249
+	a lv2:Parameter ;
+	rdfs:label "param249" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param250
+	a lv2:Parameter ;
+	rdfs:label "param250" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param251
+	a lv2:Parameter ;
+	rdfs:label "param251" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param252
+	a lv2:Parameter ;
+	rdfs:label "param252" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param253
+	a lv2:Parameter ;
+	rdfs:label "param253" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param254
+	a lv2:Parameter ;
+	rdfs:label "param254" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param255
+	a lv2:Parameter ;
+	rdfs:label "param255" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param256
+	a lv2:Parameter ;
+	rdfs:label "param256" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param257
+	a lv2:Parameter ;
+	rdfs:label "param257" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param258
+	a lv2:Parameter ;
+	rdfs:label "param258" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param259
+	a lv2:Parameter ;
+	rdfs:label "param259" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param260
+	a lv2:Parameter ;
+	rdfs:label "param260" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param261
+	a lv2:Parameter ;
+	rdfs:label "param261" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param262
+	a lv2:Parameter ;
+	rdfs:label "param262" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param263
+	a lv2:Parameter ;
+	rdfs:label "param263" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param264
+	a lv2:Parameter ;
+	rdfs:label "param264" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param265
+	a lv2:Parameter ;
+	rdfs:label "param265" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param266
+	a lv2:Parameter ;
+	rdfs:label "param266" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param267
+	a lv2:Parameter ;
+	rdfs:label "param267" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param268
+	a lv2:Parameter ;
+	rdfs:label "param268" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param269
+	a lv2:Parameter ;
+	rdfs:label "param269" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param270
+	a lv2:Parameter ;
+	rdfs:label "param270" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param271
+	a lv2:Parameter ;
+	rdfs:label "param271" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param272
+	a lv2:Parameter ;
+	rdfs:label "param272" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param273
+	a lv2:Parameter ;
+	rdfs:label "param273" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param274
+	a lv2:Parameter ;
+	rdfs:label "param274" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param275
+	a lv2:Parameter ;
+	rdfs:label "param275" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param276
+	a lv2:Parameter ;
+	rdfs:label "param276" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param277
+	a lv2:Parameter ;
+	rdfs:label "param277" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param278
+	a lv2:Parameter ;
+	rdfs:label "param278" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param279
+	a lv2:Parameter ;
+	rdfs:label "param279" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param280
+	a lv2:Parameter ;
+	rdfs:label "param280" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param281
+	a lv2:Parameter ;
+	rdfs:label "param281" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param282
+	a lv2:Parameter ;
+	rdfs:label "param282" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param283
+	a lv2:Parameter ;
+	rdfs:label "param283" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param284
+	a lv2:Parameter ;
+	rdfs:label "param284" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param285
+	a lv2:Parameter ;
+	rdfs:label "param285" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param286
+	a lv2:Parameter ;
+	rdfs:label "param286" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param287
+	a lv2:Parameter ;
+	rdfs:label "param287" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param288
+	a lv2:Parameter ;
+	rdfs:label "param288" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param289
+	a lv2:Parameter ;
+	rdfs:label "param289" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param290
+	a lv2:Parameter ;
+	rdfs:label "param290" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param291
+	a lv2:Parameter ;
+	rdfs:label "param291" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param292
+	a lv2:Parameter ;
+	rdfs:label "param292" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param293
+	a lv2:Parameter ;
+	rdfs:label "param293" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param294
+	a lv2:Parameter ;
+	rdfs:label "param294" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param295
+	a lv2:Parameter ;
+	rdfs:label "param295" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param296
+	a lv2:Parameter ;
+	rdfs:label "param296" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param297
+	a lv2:Parameter ;
+	rdfs:label "param297" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param298
+	a lv2:Parameter ;
+	rdfs:label "param298" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param299
+	a lv2:Parameter ;
+	rdfs:label "param299" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param300
+	a lv2:Parameter ;
+	rdfs:label "param300" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param301
+	a lv2:Parameter ;
+	rdfs:label "param301" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param302
+	a lv2:Parameter ;
+	rdfs:label "param302" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param303
+	a lv2:Parameter ;
+	rdfs:label "param303" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param304
+	a lv2:Parameter ;
+	rdfs:label "param304" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param305
+	a lv2:Parameter ;
+	rdfs:label "param305" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param306
+	a lv2:Parameter ;
+	rdfs:label "param306" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param307
+	a lv2:Parameter ;
+	rdfs:label "param307" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param308
+	a lv2:Parameter ;
+	rdfs:label "param308" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param309
+	a lv2:Parameter ;
+	rdfs:label "param309" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param310
+	a lv2:Parameter ;
+	rdfs:label "param310" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param311
+	a lv2:Parameter ;
+	rdfs:label "param311" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param312
+	a lv2:Parameter ;
+	rdfs:label "param312" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param313
+	a lv2:Parameter ;
+	rdfs:label "param313" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param314
+	a lv2:Parameter ;
+	rdfs:label "param314" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param315
+	a lv2:Parameter ;
+	rdfs:label "param315" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param316
+	a lv2:Parameter ;
+	rdfs:label "param316" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param317
+	a lv2:Parameter ;
+	rdfs:label "param317" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param318
+	a lv2:Parameter ;
+	rdfs:label "param318" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param319
+	a lv2:Parameter ;
+	rdfs:label "param319" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param320
+	a lv2:Parameter ;
+	rdfs:label "param320" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param321
+	a lv2:Parameter ;
+	rdfs:label "param321" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param322
+	a lv2:Parameter ;
+	rdfs:label "param322" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param323
+	a lv2:Parameter ;
+	rdfs:label "param323" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param324
+	a lv2:Parameter ;
+	rdfs:label "param324" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param325
+	a lv2:Parameter ;
+	rdfs:label "param325" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param326
+	a lv2:Parameter ;
+	rdfs:label "param326" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param327
+	a lv2:Parameter ;
+	rdfs:label "param327" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param328
+	a lv2:Parameter ;
+	rdfs:label "param328" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param329
+	a lv2:Parameter ;
+	rdfs:label "param329" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param330
+	a lv2:Parameter ;
+	rdfs:label "param330" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param331
+	a lv2:Parameter ;
+	rdfs:label "param331" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param332
+	a lv2:Parameter ;
+	rdfs:label "param332" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param333
+	a lv2:Parameter ;
+	rdfs:label "param333" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param334
+	a lv2:Parameter ;
+	rdfs:label "param334" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param335
+	a lv2:Parameter ;
+	rdfs:label "param335" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param336
+	a lv2:Parameter ;
+	rdfs:label "param336" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param337
+	a lv2:Parameter ;
+	rdfs:label "param337" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param338
+	a lv2:Parameter ;
+	rdfs:label "param338" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param339
+	a lv2:Parameter ;
+	rdfs:label "param339" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param340
+	a lv2:Parameter ;
+	rdfs:label "param340" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param341
+	a lv2:Parameter ;
+	rdfs:label "param341" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param342
+	a lv2:Parameter ;
+	rdfs:label "param342" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param343
+	a lv2:Parameter ;
+	rdfs:label "param343" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param344
+	a lv2:Parameter ;
+	rdfs:label "param344" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param345
+	a lv2:Parameter ;
+	rdfs:label "param345" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param346
+	a lv2:Parameter ;
+	rdfs:label "param346" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param347
+	a lv2:Parameter ;
+	rdfs:label "param347" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param348
+	a lv2:Parameter ;
+	rdfs:label "param348" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param349
+	a lv2:Parameter ;
+	rdfs:label "param349" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param350
+	a lv2:Parameter ;
+	rdfs:label "param350" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param351
+	a lv2:Parameter ;
+	rdfs:label "param351" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param352
+	a lv2:Parameter ;
+	rdfs:label "param352" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param353
+	a lv2:Parameter ;
+	rdfs:label "param353" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param354
+	a lv2:Parameter ;
+	rdfs:label "param354" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param355
+	a lv2:Parameter ;
+	rdfs:label "param355" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param356
+	a lv2:Parameter ;
+	rdfs:label "param356" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param357
+	a lv2:Parameter ;
+	rdfs:label "param357" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param358
+	a lv2:Parameter ;
+	rdfs:label "param358" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param359
+	a lv2:Parameter ;
+	rdfs:label "param359" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param360
+	a lv2:Parameter ;
+	rdfs:label "param360" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param361
+	a lv2:Parameter ;
+	rdfs:label "param361" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param362
+	a lv2:Parameter ;
+	rdfs:label "param362" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param363
+	a lv2:Parameter ;
+	rdfs:label "param363" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param364
+	a lv2:Parameter ;
+	rdfs:label "param364" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param365
+	a lv2:Parameter ;
+	rdfs:label "param365" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param366
+	a lv2:Parameter ;
+	rdfs:label "param366" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param367
+	a lv2:Parameter ;
+	rdfs:label "param367" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param368
+	a lv2:Parameter ;
+	rdfs:label "param368" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param369
+	a lv2:Parameter ;
+	rdfs:label "param369" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param370
+	a lv2:Parameter ;
+	rdfs:label "param370" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param371
+	a lv2:Parameter ;
+	rdfs:label "param371" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param372
+	a lv2:Parameter ;
+	rdfs:label "param372" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param373
+	a lv2:Parameter ;
+	rdfs:label "param373" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param374
+	a lv2:Parameter ;
+	rdfs:label "param374" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param375
+	a lv2:Parameter ;
+	rdfs:label "param375" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param376
+	a lv2:Parameter ;
+	rdfs:label "param376" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param377
+	a lv2:Parameter ;
+	rdfs:label "param377" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param378
+	a lv2:Parameter ;
+	rdfs:label "param378" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param379
+	a lv2:Parameter ;
+	rdfs:label "param379" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param380
+	a lv2:Parameter ;
+	rdfs:label "param380" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param381
+	a lv2:Parameter ;
+	rdfs:label "param381" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param382
+	a lv2:Parameter ;
+	rdfs:label "param382" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param383
+	a lv2:Parameter ;
+	rdfs:label "param383" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param384
+	a lv2:Parameter ;
+	rdfs:label "param384" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param385
+	a lv2:Parameter ;
+	rdfs:label "param385" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param386
+	a lv2:Parameter ;
+	rdfs:label "param386" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param387
+	a lv2:Parameter ;
+	rdfs:label "param387" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param388
+	a lv2:Parameter ;
+	rdfs:label "param388" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param389
+	a lv2:Parameter ;
+	rdfs:label "param389" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param390
+	a lv2:Parameter ;
+	rdfs:label "param390" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param391
+	a lv2:Parameter ;
+	rdfs:label "param391" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param392
+	a lv2:Parameter ;
+	rdfs:label "param392" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param393
+	a lv2:Parameter ;
+	rdfs:label "param393" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param394
+	a lv2:Parameter ;
+	rdfs:label "param394" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param395
+	a lv2:Parameter ;
+	rdfs:label "param395" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param396
+	a lv2:Parameter ;
+	rdfs:label "param396" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param397
+	a lv2:Parameter ;
+	rdfs:label "param397" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param398
+	a lv2:Parameter ;
+	rdfs:label "param398" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param399
+	a lv2:Parameter ;
+	rdfs:label "param399" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param400
+	a lv2:Parameter ;
+	rdfs:label "param400" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param401
+	a lv2:Parameter ;
+	rdfs:label "param401" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param402
+	a lv2:Parameter ;
+	rdfs:label "param402" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param403
+	a lv2:Parameter ;
+	rdfs:label "param403" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param404
+	a lv2:Parameter ;
+	rdfs:label "param404" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param405
+	a lv2:Parameter ;
+	rdfs:label "param405" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param406
+	a lv2:Parameter ;
+	rdfs:label "param406" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param407
+	a lv2:Parameter ;
+	rdfs:label "param407" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param408
+	a lv2:Parameter ;
+	rdfs:label "param408" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param409
+	a lv2:Parameter ;
+	rdfs:label "param409" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param410
+	a lv2:Parameter ;
+	rdfs:label "param410" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param411
+	a lv2:Parameter ;
+	rdfs:label "param411" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param412
+	a lv2:Parameter ;
+	rdfs:label "param412" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param413
+	a lv2:Parameter ;
+	rdfs:label "param413" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param414
+	a lv2:Parameter ;
+	rdfs:label "param414" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param415
+	a lv2:Parameter ;
+	rdfs:label "param415" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param416
+	a lv2:Parameter ;
+	rdfs:label "param416" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param417
+	a lv2:Parameter ;
+	rdfs:label "param417" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param418
+	a lv2:Parameter ;
+	rdfs:label "param418" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param419
+	a lv2:Parameter ;
+	rdfs:label "param419" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param420
+	a lv2:Parameter ;
+	rdfs:label "param420" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param421
+	a lv2:Parameter ;
+	rdfs:label "param421" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param422
+	a lv2:Parameter ;
+	rdfs:label "param422" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param423
+	a lv2:Parameter ;
+	rdfs:label "param423" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param424
+	a lv2:Parameter ;
+	rdfs:label "param424" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param425
+	a lv2:Parameter ;
+	rdfs:label "param425" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param426
+	a lv2:Parameter ;
+	rdfs:label "param426" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param427
+	a lv2:Parameter ;
+	rdfs:label "param427" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param428
+	a lv2:Parameter ;
+	rdfs:label "param428" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param429
+	a lv2:Parameter ;
+	rdfs:label "param429" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param430
+	a lv2:Parameter ;
+	rdfs:label "param430" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param431
+	a lv2:Parameter ;
+	rdfs:label "param431" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param432
+	a lv2:Parameter ;
+	rdfs:label "param432" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param433
+	a lv2:Parameter ;
+	rdfs:label "param433" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param434
+	a lv2:Parameter ;
+	rdfs:label "param434" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param435
+	a lv2:Parameter ;
+	rdfs:label "param435" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param436
+	a lv2:Parameter ;
+	rdfs:label "param436" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param437
+	a lv2:Parameter ;
+	rdfs:label "param437" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param438
+	a lv2:Parameter ;
+	rdfs:label "param438" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param439
+	a lv2:Parameter ;
+	rdfs:label "param439" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param440
+	a lv2:Parameter ;
+	rdfs:label "param440" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param441
+	a lv2:Parameter ;
+	rdfs:label "param441" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param442
+	a lv2:Parameter ;
+	rdfs:label "param442" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param443
+	a lv2:Parameter ;
+	rdfs:label "param443" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param444
+	a lv2:Parameter ;
+	rdfs:label "param444" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param445
+	a lv2:Parameter ;
+	rdfs:label "param445" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param446
+	a lv2:Parameter ;
+	rdfs:label "param446" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param447
+	a lv2:Parameter ;
+	rdfs:label "param447" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param448
+	a lv2:Parameter ;
+	rdfs:label "param448" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param449
+	a lv2:Parameter ;
+	rdfs:label "param449" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param450
+	a lv2:Parameter ;
+	rdfs:label "param450" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param451
+	a lv2:Parameter ;
+	rdfs:label "param451" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param452
+	a lv2:Parameter ;
+	rdfs:label "param452" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param453
+	a lv2:Parameter ;
+	rdfs:label "param453" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param454
+	a lv2:Parameter ;
+	rdfs:label "param454" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param455
+	a lv2:Parameter ;
+	rdfs:label "param455" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param456
+	a lv2:Parameter ;
+	rdfs:label "param456" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param457
+	a lv2:Parameter ;
+	rdfs:label "param457" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param458
+	a lv2:Parameter ;
+	rdfs:label "param458" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param459
+	a lv2:Parameter ;
+	rdfs:label "param459" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param460
+	a lv2:Parameter ;
+	rdfs:label "param460" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param461
+	a lv2:Parameter ;
+	rdfs:label "param461" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param462
+	a lv2:Parameter ;
+	rdfs:label "param462" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param463
+	a lv2:Parameter ;
+	rdfs:label "param463" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param464
+	a lv2:Parameter ;
+	rdfs:label "param464" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param465
+	a lv2:Parameter ;
+	rdfs:label "param465" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param466
+	a lv2:Parameter ;
+	rdfs:label "param466" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param467
+	a lv2:Parameter ;
+	rdfs:label "param467" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param468
+	a lv2:Parameter ;
+	rdfs:label "param468" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param469
+	a lv2:Parameter ;
+	rdfs:label "param469" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param470
+	a lv2:Parameter ;
+	rdfs:label "param470" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param471
+	a lv2:Parameter ;
+	rdfs:label "param471" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param472
+	a lv2:Parameter ;
+	rdfs:label "param472" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param473
+	a lv2:Parameter ;
+	rdfs:label "param473" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param474
+	a lv2:Parameter ;
+	rdfs:label "param474" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param475
+	a lv2:Parameter ;
+	rdfs:label "param475" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param476
+	a lv2:Parameter ;
+	rdfs:label "param476" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param477
+	a lv2:Parameter ;
+	rdfs:label "param477" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param478
+	a lv2:Parameter ;
+	rdfs:label "param478" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param479
+	a lv2:Parameter ;
+	rdfs:label "param479" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param480
+	a lv2:Parameter ;
+	rdfs:label "param480" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param481
+	a lv2:Parameter ;
+	rdfs:label "param481" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param482
+	a lv2:Parameter ;
+	rdfs:label "param482" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param483
+	a lv2:Parameter ;
+	rdfs:label "param483" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param484
+	a lv2:Parameter ;
+	rdfs:label "param484" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param485
+	a lv2:Parameter ;
+	rdfs:label "param485" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param486
+	a lv2:Parameter ;
+	rdfs:label "param486" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param487
+	a lv2:Parameter ;
+	rdfs:label "param487" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param488
+	a lv2:Parameter ;
+	rdfs:label "param488" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param489
+	a lv2:Parameter ;
+	rdfs:label "param489" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param490
+	a lv2:Parameter ;
+	rdfs:label "param490" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param491
+	a lv2:Parameter ;
+	rdfs:label "param491" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param492
+	a lv2:Parameter ;
+	rdfs:label "param492" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param493
+	a lv2:Parameter ;
+	rdfs:label "param493" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param494
+	a lv2:Parameter ;
+	rdfs:label "param494" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param495
+	a lv2:Parameter ;
+	rdfs:label "param495" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param496
+	a lv2:Parameter ;
+	rdfs:label "param496" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param497
+	a lv2:Parameter ;
+	rdfs:label "param497" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param498
+	a lv2:Parameter ;
+	rdfs:label "param498" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param499
+	a lv2:Parameter ;
+	rdfs:label "param499" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param500
+	a lv2:Parameter ;
+	rdfs:label "param500" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param501
+	a lv2:Parameter ;
+	rdfs:label "param501" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param502
+	a lv2:Parameter ;
+	rdfs:label "param502" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param503
+	a lv2:Parameter ;
+	rdfs:label "param503" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param504
+	a lv2:Parameter ;
+	rdfs:label "param504" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param505
+	a lv2:Parameter ;
+	rdfs:label "param505" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param506
+	a lv2:Parameter ;
+	rdfs:label "param506" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param507
+	a lv2:Parameter ;
+	rdfs:label "param507" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param508
+	a lv2:Parameter ;
+	rdfs:label "param508" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param509
+	a lv2:Parameter ;
+	rdfs:label "param509" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param510
+	a lv2:Parameter ;
+	rdfs:label "param510" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param511
+	a lv2:Parameter ;
+	rdfs:label "param511" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:param512
+	a lv2:Parameter ;
+	rdfs:label "param512" ;
+	rdfs:range atom:Float ;
+	lv2:default 0 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 .
+
+plug:input_group_1
+	a pg:InputGroup ;
+	lv2:name "Main Input" ;
+	lv2:symbol "input_group_1" .
+
+plug:input_group_2
+	a pg:InputGroup ;
+	lv2:name "Aux Input 1" ;
+	lv2:symbol "input_group_2" .
+
+plug:input_group_3
+	a pg:InputGroup ;
+	lv2:name "Aux Input 2" ;
+	lv2:symbol "input_group_3" .
+
+plug:input_group_4
+	a pg:InputGroup ;
+	lv2:name "Aux Input 3" ;
+	lv2:symbol "input_group_4" .
+
+plug:input_group_5
+	a pg:InputGroup ;
+	lv2:name "Aux Input 4" ;
+	lv2:symbol "input_group_5" .
+
+plug:input_group_6
+	a pg:InputGroup ;
+	lv2:name "Aux Input 5" ;
+	lv2:symbol "input_group_6" .
+
+plug:input_group_7
+	a pg:InputGroup ;
+	lv2:name "Aux Input 6" ;
+	lv2:symbol "input_group_7" .
+
+plug:input_group_8
+	a pg:InputGroup ;
+	lv2:name "Aux Input 7" ;
+	lv2:symbol "input_group_8" .
+
+plug:input_group_9
+	a pg:InputGroup ;
+	lv2:name "Aux Input 8" ;
+	lv2:symbol "input_group_9" .
+
+plug:input_group_10
+	a pg:InputGroup ;
+	lv2:name "Aux Input 9" ;
+	lv2:symbol "input_group_10" .
+
+plug:input_group_11
+	a pg:InputGroup ;
+	lv2:name "Aux Input 10" ;
+	lv2:symbol "input_group_11" .
+
+plug:input_group_12
+	a pg:InputGroup ;
+	lv2:name "Aux Input 11" ;
+	lv2:symbol "input_group_12" .
+
+plug:input_group_13
+	a pg:InputGroup ;
+	lv2:name "Aux Input 12" ;
+	lv2:symbol "input_group_13" .
+
+plug:input_group_14
+	a pg:InputGroup ;
+	lv2:name "Aux Input 13" ;
+	lv2:symbol "input_group_14" .
+
+plug:input_group_15
+	a pg:InputGroup ;
+	lv2:name "Aux Input 14" ;
+	lv2:symbol "input_group_15" .
+
+plug:input_group_16
+	a pg:InputGroup ;
+	lv2:name "Aux Input 15" ;
+	lv2:symbol "input_group_16" .
+
+plug:output_group_1
+	a pg:OutputGroup ;
+	lv2:name "Main Output" ;
+	lv2:symbol "output_group_1" .
+
+plug:output_group_2
+	a pg:OutputGroup ;
+	lv2:name "Aux Output1" ;
+	lv2:symbol "output_group_2" .
+
+plug:output_group_3
+	a pg:OutputGroup ;
+	lv2:name "Aux Output2" ;
+	lv2:symbol "output_group_3" .
+
+plug:output_group_4
+	a pg:OutputGroup ;
+	lv2:name "Aux Output3" ;
+	lv2:symbol "output_group_4" .
+
+plug:output_group_5
+	a pg:OutputGroup ;
+	lv2:name "Aux Output4" ;
+	lv2:symbol "output_group_5" .
+
+plug:output_group_6
+	a pg:OutputGroup ;
+	lv2:name "Aux Output5" ;
+	lv2:symbol "output_group_6" .
+
+plug:output_group_7
+	a pg:OutputGroup ;
+	lv2:name "Aux Output6" ;
+	lv2:symbol "output_group_7" .
+
+plug:output_group_8
+	a pg:OutputGroup ;
+	lv2:name "Aux Output7" ;
+	lv2:symbol "output_group_8" .
+
+plug:output_group_9
+	a pg:OutputGroup ;
+	lv2:name "Aux Output8" ;
+	lv2:symbol "output_group_9" .
+
+plug:output_group_10
+	a pg:OutputGroup ;
+	lv2:name "Aux Output9" ;
+	lv2:symbol "output_group_10" .
+
+plug:output_group_11
+	a pg:OutputGroup ;
+	lv2:name "Aux Output10" ;
+	lv2:symbol "output_group_11" .
+
+plug:output_group_12
+	a pg:OutputGroup ;
+	lv2:name "Aux Output11" ;
+	lv2:symbol "output_group_12" .
+
+plug:output_group_13
+	a pg:OutputGroup ;
+	lv2:name "Aux Output12" ;
+	lv2:symbol "output_group_13" .
+
+plug:output_group_14
+	a pg:OutputGroup ;
+	lv2:name "Aux Output13" ;
+	lv2:symbol "output_group_14" .
+
+plug:output_group_15
+	a pg:OutputGroup ;
+	lv2:name "Aux Output14" ;
+	lv2:symbol "output_group_15" .
+
+plug:output_group_16
+	a pg:OutputGroup ;
+	lv2:name "Aux Output15" ;
+	lv2:symbol "output_group_16" .
+
+<https://github.com/timothyschoen/plugdata>
+	ui:ui <https://github.com/timothyschoen/plugdata:UI> ;
+	a lv2:InstrumentPlugin ;
+	doap:name "plugdata" ;
+	doap:description "plugdata" ;
+	lv2:minorVersion 9 ;
+	lv2:microVersion 4 ;
+	doap:maintainer [
+		a foaf:Person ;
+		foaf:name "plugdata" ;
+		foaf:homepage <plugdata.org> ;
+		foaf:mbox <> ;
+	] ;
+	doap:release [
+		a doap:Version ;
+		doap:revision "0.9.4" ;
+	] ;
+	lv2:optionalFeature
+		lv2:hardRTCapable ;
+	lv2:extensionData
+		state:interface ;
+	lv2:requiredFeature
+		urid:map ,
+		opts:options ,
+		bufs:boundedBlockLength ;
+	pg:mainInput plug:input_group_1 ;
+	pg:mainOutput plug:output_group_1 ;
+	patch:writable
+		plug:volume ,
+		plug:param1 ,
+		plug:param2 ,
+		plug:param3 ,
+		plug:param4 ,
+		plug:param5 ,
+		plug:param6 ,
+		plug:param7 ,
+		plug:param8 ,
+		plug:param9 ,
+		plug:param10 ,
+		plug:param11 ,
+		plug:param12 ,
+		plug:param13 ,
+		plug:param14 ,
+		plug:param15 ,
+		plug:param16 ,
+		plug:param17 ,
+		plug:param18 ,
+		plug:param19 ,
+		plug:param20 ,
+		plug:param21 ,
+		plug:param22 ,
+		plug:param23 ,
+		plug:param24 ,
+		plug:param25 ,
+		plug:param26 ,
+		plug:param27 ,
+		plug:param28 ,
+		plug:param29 ,
+		plug:param30 ,
+		plug:param31 ,
+		plug:param32 ,
+		plug:param33 ,
+		plug:param34 ,
+		plug:param35 ,
+		plug:param36 ,
+		plug:param37 ,
+		plug:param38 ,
+		plug:param39 ,
+		plug:param40 ,
+		plug:param41 ,
+		plug:param42 ,
+		plug:param43 ,
+		plug:param44 ,
+		plug:param45 ,
+		plug:param46 ,
+		plug:param47 ,
+		plug:param48 ,
+		plug:param49 ,
+		plug:param50 ,
+		plug:param51 ,
+		plug:param52 ,
+		plug:param53 ,
+		plug:param54 ,
+		plug:param55 ,
+		plug:param56 ,
+		plug:param57 ,
+		plug:param58 ,
+		plug:param59 ,
+		plug:param60 ,
+		plug:param61 ,
+		plug:param62 ,
+		plug:param63 ,
+		plug:param64 ,
+		plug:param65 ,
+		plug:param66 ,
+		plug:param67 ,
+		plug:param68 ,
+		plug:param69 ,
+		plug:param70 ,
+		plug:param71 ,
+		plug:param72 ,
+		plug:param73 ,
+		plug:param74 ,
+		plug:param75 ,
+		plug:param76 ,
+		plug:param77 ,
+		plug:param78 ,
+		plug:param79 ,
+		plug:param80 ,
+		plug:param81 ,
+		plug:param82 ,
+		plug:param83 ,
+		plug:param84 ,
+		plug:param85 ,
+		plug:param86 ,
+		plug:param87 ,
+		plug:param88 ,
+		plug:param89 ,
+		plug:param90 ,
+		plug:param91 ,
+		plug:param92 ,
+		plug:param93 ,
+		plug:param94 ,
+		plug:param95 ,
+		plug:param96 ,
+		plug:param97 ,
+		plug:param98 ,
+		plug:param99 ,
+		plug:param100 ,
+		plug:param101 ,
+		plug:param102 ,
+		plug:param103 ,
+		plug:param104 ,
+		plug:param105 ,
+		plug:param106 ,
+		plug:param107 ,
+		plug:param108 ,
+		plug:param109 ,
+		plug:param110 ,
+		plug:param111 ,
+		plug:param112 ,
+		plug:param113 ,
+		plug:param114 ,
+		plug:param115 ,
+		plug:param116 ,
+		plug:param117 ,
+		plug:param118 ,
+		plug:param119 ,
+		plug:param120 ,
+		plug:param121 ,
+		plug:param122 ,
+		plug:param123 ,
+		plug:param124 ,
+		plug:param125 ,
+		plug:param126 ,
+		plug:param127 ,
+		plug:param128 ,
+		plug:param129 ,
+		plug:param130 ,
+		plug:param131 ,
+		plug:param132 ,
+		plug:param133 ,
+		plug:param134 ,
+		plug:param135 ,
+		plug:param136 ,
+		plug:param137 ,
+		plug:param138 ,
+		plug:param139 ,
+		plug:param140 ,
+		plug:param141 ,
+		plug:param142 ,
+		plug:param143 ,
+		plug:param144 ,
+		plug:param145 ,
+		plug:param146 ,
+		plug:param147 ,
+		plug:param148 ,
+		plug:param149 ,
+		plug:param150 ,
+		plug:param151 ,
+		plug:param152 ,
+		plug:param153 ,
+		plug:param154 ,
+		plug:param155 ,
+		plug:param156 ,
+		plug:param157 ,
+		plug:param158 ,
+		plug:param159 ,
+		plug:param160 ,
+		plug:param161 ,
+		plug:param162 ,
+		plug:param163 ,
+		plug:param164 ,
+		plug:param165 ,
+		plug:param166 ,
+		plug:param167 ,
+		plug:param168 ,
+		plug:param169 ,
+		plug:param170 ,
+		plug:param171 ,
+		plug:param172 ,
+		plug:param173 ,
+		plug:param174 ,
+		plug:param175 ,
+		plug:param176 ,
+		plug:param177 ,
+		plug:param178 ,
+		plug:param179 ,
+		plug:param180 ,
+		plug:param181 ,
+		plug:param182 ,
+		plug:param183 ,
+		plug:param184 ,
+		plug:param185 ,
+		plug:param186 ,
+		plug:param187 ,
+		plug:param188 ,
+		plug:param189 ,
+		plug:param190 ,
+		plug:param191 ,
+		plug:param192 ,
+		plug:param193 ,
+		plug:param194 ,
+		plug:param195 ,
+		plug:param196 ,
+		plug:param197 ,
+		plug:param198 ,
+		plug:param199 ,
+		plug:param200 ,
+		plug:param201 ,
+		plug:param202 ,
+		plug:param203 ,
+		plug:param204 ,
+		plug:param205 ,
+		plug:param206 ,
+		plug:param207 ,
+		plug:param208 ,
+		plug:param209 ,
+		plug:param210 ,
+		plug:param211 ,
+		plug:param212 ,
+		plug:param213 ,
+		plug:param214 ,
+		plug:param215 ,
+		plug:param216 ,
+		plug:param217 ,
+		plug:param218 ,
+		plug:param219 ,
+		plug:param220 ,
+		plug:param221 ,
+		plug:param222 ,
+		plug:param223 ,
+		plug:param224 ,
+		plug:param225 ,
+		plug:param226 ,
+		plug:param227 ,
+		plug:param228 ,
+		plug:param229 ,
+		plug:param230 ,
+		plug:param231 ,
+		plug:param232 ,
+		plug:param233 ,
+		plug:param234 ,
+		plug:param235 ,
+		plug:param236 ,
+		plug:param237 ,
+		plug:param238 ,
+		plug:param239 ,
+		plug:param240 ,
+		plug:param241 ,
+		plug:param242 ,
+		plug:param243 ,
+		plug:param244 ,
+		plug:param245 ,
+		plug:param246 ,
+		plug:param247 ,
+		plug:param248 ,
+		plug:param249 ,
+		plug:param250 ,
+		plug:param251 ,
+		plug:param252 ,
+		plug:param253 ,
+		plug:param254 ,
+		plug:param255 ,
+		plug:param256 ,
+		plug:param257 ,
+		plug:param258 ,
+		plug:param259 ,
+		plug:param260 ,
+		plug:param261 ,
+		plug:param262 ,
+		plug:param263 ,
+		plug:param264 ,
+		plug:param265 ,
+		plug:param266 ,
+		plug:param267 ,
+		plug:param268 ,
+		plug:param269 ,
+		plug:param270 ,
+		plug:param271 ,
+		plug:param272 ,
+		plug:param273 ,
+		plug:param274 ,
+		plug:param275 ,
+		plug:param276 ,
+		plug:param277 ,
+		plug:param278 ,
+		plug:param279 ,
+		plug:param280 ,
+		plug:param281 ,
+		plug:param282 ,
+		plug:param283 ,
+		plug:param284 ,
+		plug:param285 ,
+		plug:param286 ,
+		plug:param287 ,
+		plug:param288 ,
+		plug:param289 ,
+		plug:param290 ,
+		plug:param291 ,
+		plug:param292 ,
+		plug:param293 ,
+		plug:param294 ,
+		plug:param295 ,
+		plug:param296 ,
+		plug:param297 ,
+		plug:param298 ,
+		plug:param299 ,
+		plug:param300 ,
+		plug:param301 ,
+		plug:param302 ,
+		plug:param303 ,
+		plug:param304 ,
+		plug:param305 ,
+		plug:param306 ,
+		plug:param307 ,
+		plug:param308 ,
+		plug:param309 ,
+		plug:param310 ,
+		plug:param311 ,
+		plug:param312 ,
+		plug:param313 ,
+		plug:param314 ,
+		plug:param315 ,
+		plug:param316 ,
+		plug:param317 ,
+		plug:param318 ,
+		plug:param319 ,
+		plug:param320 ,
+		plug:param321 ,
+		plug:param322 ,
+		plug:param323 ,
+		plug:param324 ,
+		plug:param325 ,
+		plug:param326 ,
+		plug:param327 ,
+		plug:param328 ,
+		plug:param329 ,
+		plug:param330 ,
+		plug:param331 ,
+		plug:param332 ,
+		plug:param333 ,
+		plug:param334 ,
+		plug:param335 ,
+		plug:param336 ,
+		plug:param337 ,
+		plug:param338 ,
+		plug:param339 ,
+		plug:param340 ,
+		plug:param341 ,
+		plug:param342 ,
+		plug:param343 ,
+		plug:param344 ,
+		plug:param345 ,
+		plug:param346 ,
+		plug:param347 ,
+		plug:param348 ,
+		plug:param349 ,
+		plug:param350 ,
+		plug:param351 ,
+		plug:param352 ,
+		plug:param353 ,
+		plug:param354 ,
+		plug:param355 ,
+		plug:param356 ,
+		plug:param357 ,
+		plug:param358 ,
+		plug:param359 ,
+		plug:param360 ,
+		plug:param361 ,
+		plug:param362 ,
+		plug:param363 ,
+		plug:param364 ,
+		plug:param365 ,
+		plug:param366 ,
+		plug:param367 ,
+		plug:param368 ,
+		plug:param369 ,
+		plug:param370 ,
+		plug:param371 ,
+		plug:param372 ,
+		plug:param373 ,
+		plug:param374 ,
+		plug:param375 ,
+		plug:param376 ,
+		plug:param377 ,
+		plug:param378 ,
+		plug:param379 ,
+		plug:param380 ,
+		plug:param381 ,
+		plug:param382 ,
+		plug:param383 ,
+		plug:param384 ,
+		plug:param385 ,
+		plug:param386 ,
+		plug:param387 ,
+		plug:param388 ,
+		plug:param389 ,
+		plug:param390 ,
+		plug:param391 ,
+		plug:param392 ,
+		plug:param393 ,
+		plug:param394 ,
+		plug:param395 ,
+		plug:param396 ,
+		plug:param397 ,
+		plug:param398 ,
+		plug:param399 ,
+		plug:param400 ,
+		plug:param401 ,
+		plug:param402 ,
+		plug:param403 ,
+		plug:param404 ,
+		plug:param405 ,
+		plug:param406 ,
+		plug:param407 ,
+		plug:param408 ,
+		plug:param409 ,
+		plug:param410 ,
+		plug:param411 ,
+		plug:param412 ,
+		plug:param413 ,
+		plug:param414 ,
+		plug:param415 ,
+		plug:param416 ,
+		plug:param417 ,
+		plug:param418 ,
+		plug:param419 ,
+		plug:param420 ,
+		plug:param421 ,
+		plug:param422 ,
+		plug:param423 ,
+		plug:param424 ,
+		plug:param425 ,
+		plug:param426 ,
+		plug:param427 ,
+		plug:param428 ,
+		plug:param429 ,
+		plug:param430 ,
+		plug:param431 ,
+		plug:param432 ,
+		plug:param433 ,
+		plug:param434 ,
+		plug:param435 ,
+		plug:param436 ,
+		plug:param437 ,
+		plug:param438 ,
+		plug:param439 ,
+		plug:param440 ,
+		plug:param441 ,
+		plug:param442 ,
+		plug:param443 ,
+		plug:param444 ,
+		plug:param445 ,
+		plug:param446 ,
+		plug:param447 ,
+		plug:param448 ,
+		plug:param449 ,
+		plug:param450 ,
+		plug:param451 ,
+		plug:param452 ,
+		plug:param453 ,
+		plug:param454 ,
+		plug:param455 ,
+		plug:param456 ,
+		plug:param457 ,
+		plug:param458 ,
+		plug:param459 ,
+		plug:param460 ,
+		plug:param461 ,
+		plug:param462 ,
+		plug:param463 ,
+		plug:param464 ,
+		plug:param465 ,
+		plug:param466 ,
+		plug:param467 ,
+		plug:param468 ,
+		plug:param469 ,
+		plug:param470 ,
+		plug:param471 ,
+		plug:param472 ,
+		plug:param473 ,
+		plug:param474 ,
+		plug:param475 ,
+		plug:param476 ,
+		plug:param477 ,
+		plug:param478 ,
+		plug:param479 ,
+		plug:param480 ,
+		plug:param481 ,
+		plug:param482 ,
+		plug:param483 ,
+		plug:param484 ,
+		plug:param485 ,
+		plug:param486 ,
+		plug:param487 ,
+		plug:param488 ,
+		plug:param489 ,
+		plug:param490 ,
+		plug:param491 ,
+		plug:param492 ,
+		plug:param493 ,
+		plug:param494 ,
+		plug:param495 ,
+		plug:param496 ,
+		plug:param497 ,
+		plug:param498 ,
+		plug:param499 ,
+		plug:param500 ,
+		plug:param501 ,
+		plug:param502 ,
+		plug:param503 ,
+		plug:param504 ,
+		plug:param505 ,
+		plug:param506 ,
+		plug:param507 ,
+		plug:param508 ,
+		plug:param509 ,
+		plug:param510 ,
+		plug:param511 ,
+		plug:param512 ;
+	patch:readable
+		plug:volume ,
+		plug:param1 ,
+		plug:param2 ,
+		plug:param3 ,
+		plug:param4 ,
+		plug:param5 ,
+		plug:param6 ,
+		plug:param7 ,
+		plug:param8 ,
+		plug:param9 ,
+		plug:param10 ,
+		plug:param11 ,
+		plug:param12 ,
+		plug:param13 ,
+		plug:param14 ,
+		plug:param15 ,
+		plug:param16 ,
+		plug:param17 ,
+		plug:param18 ,
+		plug:param19 ,
+		plug:param20 ,
+		plug:param21 ,
+		plug:param22 ,
+		plug:param23 ,
+		plug:param24 ,
+		plug:param25 ,
+		plug:param26 ,
+		plug:param27 ,
+		plug:param28 ,
+		plug:param29 ,
+		plug:param30 ,
+		plug:param31 ,
+		plug:param32 ,
+		plug:param33 ,
+		plug:param34 ,
+		plug:param35 ,
+		plug:param36 ,
+		plug:param37 ,
+		plug:param38 ,
+		plug:param39 ,
+		plug:param40 ,
+		plug:param41 ,
+		plug:param42 ,
+		plug:param43 ,
+		plug:param44 ,
+		plug:param45 ,
+		plug:param46 ,
+		plug:param47 ,
+		plug:param48 ,
+		plug:param49 ,
+		plug:param50 ,
+		plug:param51 ,
+		plug:param52 ,
+		plug:param53 ,
+		plug:param54 ,
+		plug:param55 ,
+		plug:param56 ,
+		plug:param57 ,
+		plug:param58 ,
+		plug:param59 ,
+		plug:param60 ,
+		plug:param61 ,
+		plug:param62 ,
+		plug:param63 ,
+		plug:param64 ,
+		plug:param65 ,
+		plug:param66 ,
+		plug:param67 ,
+		plug:param68 ,
+		plug:param69 ,
+		plug:param70 ,
+		plug:param71 ,
+		plug:param72 ,
+		plug:param73 ,
+		plug:param74 ,
+		plug:param75 ,
+		plug:param76 ,
+		plug:param77 ,
+		plug:param78 ,
+		plug:param79 ,
+		plug:param80 ,
+		plug:param81 ,
+		plug:param82 ,
+		plug:param83 ,
+		plug:param84 ,
+		plug:param85 ,
+		plug:param86 ,
+		plug:param87 ,
+		plug:param88 ,
+		plug:param89 ,
+		plug:param90 ,
+		plug:param91 ,
+		plug:param92 ,
+		plug:param93 ,
+		plug:param94 ,
+		plug:param95 ,
+		plug:param96 ,
+		plug:param97 ,
+		plug:param98 ,
+		plug:param99 ,
+		plug:param100 ,
+		plug:param101 ,
+		plug:param102 ,
+		plug:param103 ,
+		plug:param104 ,
+		plug:param105 ,
+		plug:param106 ,
+		plug:param107 ,
+		plug:param108 ,
+		plug:param109 ,
+		plug:param110 ,
+		plug:param111 ,
+		plug:param112 ,
+		plug:param113 ,
+		plug:param114 ,
+		plug:param115 ,
+		plug:param116 ,
+		plug:param117 ,
+		plug:param118 ,
+		plug:param119 ,
+		plug:param120 ,
+		plug:param121 ,
+		plug:param122 ,
+		plug:param123 ,
+		plug:param124 ,
+		plug:param125 ,
+		plug:param126 ,
+		plug:param127 ,
+		plug:param128 ,
+		plug:param129 ,
+		plug:param130 ,
+		plug:param131 ,
+		plug:param132 ,
+		plug:param133 ,
+		plug:param134 ,
+		plug:param135 ,
+		plug:param136 ,
+		plug:param137 ,
+		plug:param138 ,
+		plug:param139 ,
+		plug:param140 ,
+		plug:param141 ,
+		plug:param142 ,
+		plug:param143 ,
+		plug:param144 ,
+		plug:param145 ,
+		plug:param146 ,
+		plug:param147 ,
+		plug:param148 ,
+		plug:param149 ,
+		plug:param150 ,
+		plug:param151 ,
+		plug:param152 ,
+		plug:param153 ,
+		plug:param154 ,
+		plug:param155 ,
+		plug:param156 ,
+		plug:param157 ,
+		plug:param158 ,
+		plug:param159 ,
+		plug:param160 ,
+		plug:param161 ,
+		plug:param162 ,
+		plug:param163 ,
+		plug:param164 ,
+		plug:param165 ,
+		plug:param166 ,
+		plug:param167 ,
+		plug:param168 ,
+		plug:param169 ,
+		plug:param170 ,
+		plug:param171 ,
+		plug:param172 ,
+		plug:param173 ,
+		plug:param174 ,
+		plug:param175 ,
+		plug:param176 ,
+		plug:param177 ,
+		plug:param178 ,
+		plug:param179 ,
+		plug:param180 ,
+		plug:param181 ,
+		plug:param182 ,
+		plug:param183 ,
+		plug:param184 ,
+		plug:param185 ,
+		plug:param186 ,
+		plug:param187 ,
+		plug:param188 ,
+		plug:param189 ,
+		plug:param190 ,
+		plug:param191 ,
+		plug:param192 ,
+		plug:param193 ,
+		plug:param194 ,
+		plug:param195 ,
+		plug:param196 ,
+		plug:param197 ,
+		plug:param198 ,
+		plug:param199 ,
+		plug:param200 ,
+		plug:param201 ,
+		plug:param202 ,
+		plug:param203 ,
+		plug:param204 ,
+		plug:param205 ,
+		plug:param206 ,
+		plug:param207 ,
+		plug:param208 ,
+		plug:param209 ,
+		plug:param210 ,
+		plug:param211 ,
+		plug:param212 ,
+		plug:param213 ,
+		plug:param214 ,
+		plug:param215 ,
+		plug:param216 ,
+		plug:param217 ,
+		plug:param218 ,
+		plug:param219 ,
+		plug:param220 ,
+		plug:param221 ,
+		plug:param222 ,
+		plug:param223 ,
+		plug:param224 ,
+		plug:param225 ,
+		plug:param226 ,
+		plug:param227 ,
+		plug:param228 ,
+		plug:param229 ,
+		plug:param230 ,
+		plug:param231 ,
+		plug:param232 ,
+		plug:param233 ,
+		plug:param234 ,
+		plug:param235 ,
+		plug:param236 ,
+		plug:param237 ,
+		plug:param238 ,
+		plug:param239 ,
+		plug:param240 ,
+		plug:param241 ,
+		plug:param242 ,
+		plug:param243 ,
+		plug:param244 ,
+		plug:param245 ,
+		plug:param246 ,
+		plug:param247 ,
+		plug:param248 ,
+		plug:param249 ,
+		plug:param250 ,
+		plug:param251 ,
+		plug:param252 ,
+		plug:param253 ,
+		plug:param254 ,
+		plug:param255 ,
+		plug:param256 ,
+		plug:param257 ,
+		plug:param258 ,
+		plug:param259 ,
+		plug:param260 ,
+		plug:param261 ,
+		plug:param262 ,
+		plug:param263 ,
+		plug:param264 ,
+		plug:param265 ,
+		plug:param266 ,
+		plug:param267 ,
+		plug:param268 ,
+		plug:param269 ,
+		plug:param270 ,
+		plug:param271 ,
+		plug:param272 ,
+		plug:param273 ,
+		plug:param274 ,
+		plug:param275 ,
+		plug:param276 ,
+		plug:param277 ,
+		plug:param278 ,
+		plug:param279 ,
+		plug:param280 ,
+		plug:param281 ,
+		plug:param282 ,
+		plug:param283 ,
+		plug:param284 ,
+		plug:param285 ,
+		plug:param286 ,
+		plug:param287 ,
+		plug:param288 ,
+		plug:param289 ,
+		plug:param290 ,
+		plug:param291 ,
+		plug:param292 ,
+		plug:param293 ,
+		plug:param294 ,
+		plug:param295 ,
+		plug:param296 ,
+		plug:param297 ,
+		plug:param298 ,
+		plug:param299 ,
+		plug:param300 ,
+		plug:param301 ,
+		plug:param302 ,
+		plug:param303 ,
+		plug:param304 ,
+		plug:param305 ,
+		plug:param306 ,
+		plug:param307 ,
+		plug:param308 ,
+		plug:param309 ,
+		plug:param310 ,
+		plug:param311 ,
+		plug:param312 ,
+		plug:param313 ,
+		plug:param314 ,
+		plug:param315 ,
+		plug:param316 ,
+		plug:param317 ,
+		plug:param318 ,
+		plug:param319 ,
+		plug:param320 ,
+		plug:param321 ,
+		plug:param322 ,
+		plug:param323 ,
+		plug:param324 ,
+		plug:param325 ,
+		plug:param326 ,
+		plug:param327 ,
+		plug:param328 ,
+		plug:param329 ,
+		plug:param330 ,
+		plug:param331 ,
+		plug:param332 ,
+		plug:param333 ,
+		plug:param334 ,
+		plug:param335 ,
+		plug:param336 ,
+		plug:param337 ,
+		plug:param338 ,
+		plug:param339 ,
+		plug:param340 ,
+		plug:param341 ,
+		plug:param342 ,
+		plug:param343 ,
+		plug:param344 ,
+		plug:param345 ,
+		plug:param346 ,
+		plug:param347 ,
+		plug:param348 ,
+		plug:param349 ,
+		plug:param350 ,
+		plug:param351 ,
+		plug:param352 ,
+		plug:param353 ,
+		plug:param354 ,
+		plug:param355 ,
+		plug:param356 ,
+		plug:param357 ,
+		plug:param358 ,
+		plug:param359 ,
+		plug:param360 ,
+		plug:param361 ,
+		plug:param362 ,
+		plug:param363 ,
+		plug:param364 ,
+		plug:param365 ,
+		plug:param366 ,
+		plug:param367 ,
+		plug:param368 ,
+		plug:param369 ,
+		plug:param370 ,
+		plug:param371 ,
+		plug:param372 ,
+		plug:param373 ,
+		plug:param374 ,
+		plug:param375 ,
+		plug:param376 ,
+		plug:param377 ,
+		plug:param378 ,
+		plug:param379 ,
+		plug:param380 ,
+		plug:param381 ,
+		plug:param382 ,
+		plug:param383 ,
+		plug:param384 ,
+		plug:param385 ,
+		plug:param386 ,
+		plug:param387 ,
+		plug:param388 ,
+		plug:param389 ,
+		plug:param390 ,
+		plug:param391 ,
+		plug:param392 ,
+		plug:param393 ,
+		plug:param394 ,
+		plug:param395 ,
+		plug:param396 ,
+		plug:param397 ,
+		plug:param398 ,
+		plug:param399 ,
+		plug:param400 ,
+		plug:param401 ,
+		plug:param402 ,
+		plug:param403 ,
+		plug:param404 ,
+		plug:param405 ,
+		plug:param406 ,
+		plug:param407 ,
+		plug:param408 ,
+		plug:param409 ,
+		plug:param410 ,
+		plug:param411 ,
+		plug:param412 ,
+		plug:param413 ,
+		plug:param414 ,
+		plug:param415 ,
+		plug:param416 ,
+		plug:param417 ,
+		plug:param418 ,
+		plug:param419 ,
+		plug:param420 ,
+		plug:param421 ,
+		plug:param422 ,
+		plug:param423 ,
+		plug:param424 ,
+		plug:param425 ,
+		plug:param426 ,
+		plug:param427 ,
+		plug:param428 ,
+		plug:param429 ,
+		plug:param430 ,
+		plug:param431 ,
+		plug:param432 ,
+		plug:param433 ,
+		plug:param434 ,
+		plug:param435 ,
+		plug:param436 ,
+		plug:param437 ,
+		plug:param438 ,
+		plug:param439 ,
+		plug:param440 ,
+		plug:param441 ,
+		plug:param442 ,
+		plug:param443 ,
+		plug:param444 ,
+		plug:param445 ,
+		plug:param446 ,
+		plug:param447 ,
+		plug:param448 ,
+		plug:param449 ,
+		plug:param450 ,
+		plug:param451 ,
+		plug:param452 ,
+		plug:param453 ,
+		plug:param454 ,
+		plug:param455 ,
+		plug:param456 ,
+		plug:param457 ,
+		plug:param458 ,
+		plug:param459 ,
+		plug:param460 ,
+		plug:param461 ,
+		plug:param462 ,
+		plug:param463 ,
+		plug:param464 ,
+		plug:param465 ,
+		plug:param466 ,
+		plug:param467 ,
+		plug:param468 ,
+		plug:param469 ,
+		plug:param470 ,
+		plug:param471 ,
+		plug:param472 ,
+		plug:param473 ,
+		plug:param474 ,
+		plug:param475 ,
+		plug:param476 ,
+		plug:param477 ,
+		plug:param478 ,
+		plug:param479 ,
+		plug:param480 ,
+		plug:param481 ,
+		plug:param482 ,
+		plug:param483 ,
+		plug:param484 ,
+		plug:param485 ,
+		plug:param486 ,
+		plug:param487 ,
+		plug:param488 ,
+		plug:param489 ,
+		plug:param490 ,
+		plug:param491 ,
+		plug:param492 ,
+		plug:param493 ,
+		plug:param494 ,
+		plug:param495 ,
+		plug:param496 ,
+		plug:param497 ,
+		plug:param498 ,
+		plug:param499 ,
+		plug:param500 ,
+		plug:param501 ,
+		plug:param502 ,
+		plug:param503 ,
+		plug:param504 ,
+		plug:param505 ,
+		plug:param506 ,
+		plug:param507 ,
+		plug:param508 ,
+		plug:param509 ,
+		plug:param510 ,
+		plug:param511 ,
+		plug:param512 ;
+	lv2:port [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 0 ;
+		lv2:symbol "audio_in_1" ;
+		lv2:name "Audio In 1" ;
+		pg:group plug:input_group_1 ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 1 ;
+		lv2:symbol "audio_in_2" ;
+		lv2:name "Audio In 2" ;
+		pg:group plug:input_group_1 ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 2 ;
+		lv2:symbol "audio_in_3" ;
+		lv2:name "Audio In 3" ;
+		pg:group plug:input_group_2 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 3 ;
+		lv2:symbol "audio_in_4" ;
+		lv2:name "Audio In 4" ;
+		pg:group plug:input_group_2 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 4 ;
+		lv2:symbol "audio_in_5" ;
+		lv2:name "Audio In 5" ;
+		pg:group plug:input_group_3 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 5 ;
+		lv2:symbol "audio_in_6" ;
+		lv2:name "Audio In 6" ;
+		pg:group plug:input_group_3 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 6 ;
+		lv2:symbol "audio_in_7" ;
+		lv2:name "Audio In 7" ;
+		pg:group plug:input_group_4 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 7 ;
+		lv2:symbol "audio_in_8" ;
+		lv2:name "Audio In 8" ;
+		pg:group plug:input_group_4 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 8 ;
+		lv2:symbol "audio_in_9" ;
+		lv2:name "Audio In 9" ;
+		pg:group plug:input_group_5 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 9 ;
+		lv2:symbol "audio_in_10" ;
+		lv2:name "Audio In 10" ;
+		pg:group plug:input_group_5 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 10 ;
+		lv2:symbol "audio_in_11" ;
+		lv2:name "Audio In 11" ;
+		pg:group plug:input_group_6 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 11 ;
+		lv2:symbol "audio_in_12" ;
+		lv2:name "Audio In 12" ;
+		pg:group plug:input_group_6 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 12 ;
+		lv2:symbol "audio_in_13" ;
+		lv2:name "Audio In 13" ;
+		pg:group plug:input_group_7 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 13 ;
+		lv2:symbol "audio_in_14" ;
+		lv2:name "Audio In 14" ;
+		pg:group plug:input_group_7 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 14 ;
+		lv2:symbol "audio_in_15" ;
+		lv2:name "Audio In 15" ;
+		pg:group plug:input_group_8 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 15 ;
+		lv2:symbol "audio_in_16" ;
+		lv2:name "Audio In 16" ;
+		pg:group plug:input_group_8 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 16 ;
+		lv2:symbol "audio_in_17" ;
+		lv2:name "Audio In 17" ;
+		pg:group plug:input_group_9 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 17 ;
+		lv2:symbol "audio_in_18" ;
+		lv2:name "Audio In 18" ;
+		pg:group plug:input_group_9 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 18 ;
+		lv2:symbol "audio_in_19" ;
+		lv2:name "Audio In 19" ;
+		pg:group plug:input_group_10 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 19 ;
+		lv2:symbol "audio_in_20" ;
+		lv2:name "Audio In 20" ;
+		pg:group plug:input_group_10 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 20 ;
+		lv2:symbol "audio_in_21" ;
+		lv2:name "Audio In 21" ;
+		pg:group plug:input_group_11 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 21 ;
+		lv2:symbol "audio_in_22" ;
+		lv2:name "Audio In 22" ;
+		pg:group plug:input_group_11 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 22 ;
+		lv2:symbol "audio_in_23" ;
+		lv2:name "Audio In 23" ;
+		pg:group plug:input_group_12 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 23 ;
+		lv2:symbol "audio_in_24" ;
+		lv2:name "Audio In 24" ;
+		pg:group plug:input_group_12 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 24 ;
+		lv2:symbol "audio_in_25" ;
+		lv2:name "Audio In 25" ;
+		pg:group plug:input_group_13 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 25 ;
+		lv2:symbol "audio_in_26" ;
+		lv2:name "Audio In 26" ;
+		pg:group plug:input_group_13 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 26 ;
+		lv2:symbol "audio_in_27" ;
+		lv2:name "Audio In 27" ;
+		pg:group plug:input_group_14 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 27 ;
+		lv2:symbol "audio_in_28" ;
+		lv2:name "Audio In 28" ;
+		pg:group plug:input_group_14 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 28 ;
+		lv2:symbol "audio_in_29" ;
+		lv2:name "Audio In 29" ;
+		pg:group plug:input_group_15 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 29 ;
+		lv2:symbol "audio_in_30" ;
+		lv2:name "Audio In 30" ;
+		pg:group plug:input_group_15 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 30 ;
+		lv2:symbol "audio_in_31" ;
+		lv2:name "Audio In 31" ;
+		pg:group plug:input_group_16 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:InputPort , lv2:AudioPort ;
+		lv2:index 31 ;
+		lv2:symbol "audio_in_32" ;
+		lv2:name "Audio In 32" ;
+		pg:group plug:input_group_16 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 32 ;
+		lv2:symbol "audio_out_1" ;
+		lv2:name "Audio Out 1" ;
+		pg:group plug:output_group_1 ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 33 ;
+		lv2:symbol "audio_out_2" ;
+		lv2:name "Audio Out 2" ;
+		pg:group plug:output_group_1 ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 34 ;
+		lv2:symbol "audio_out_3" ;
+		lv2:name "Audio Out 3" ;
+		pg:group plug:output_group_2 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 35 ;
+		lv2:symbol "audio_out_4" ;
+		lv2:name "Audio Out 4" ;
+		pg:group plug:output_group_2 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 36 ;
+		lv2:symbol "audio_out_5" ;
+		lv2:name "Audio Out 5" ;
+		pg:group plug:output_group_3 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 37 ;
+		lv2:symbol "audio_out_6" ;
+		lv2:name "Audio Out 6" ;
+		pg:group plug:output_group_3 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 38 ;
+		lv2:symbol "audio_out_7" ;
+		lv2:name "Audio Out 7" ;
+		pg:group plug:output_group_4 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 39 ;
+		lv2:symbol "audio_out_8" ;
+		lv2:name "Audio Out 8" ;
+		pg:group plug:output_group_4 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 40 ;
+		lv2:symbol "audio_out_9" ;
+		lv2:name "Audio Out 9" ;
+		pg:group plug:output_group_5 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 41 ;
+		lv2:symbol "audio_out_10" ;
+		lv2:name "Audio Out 10" ;
+		pg:group plug:output_group_5 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 42 ;
+		lv2:symbol "audio_out_11" ;
+		lv2:name "Audio Out 11" ;
+		pg:group plug:output_group_6 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 43 ;
+		lv2:symbol "audio_out_12" ;
+		lv2:name "Audio Out 12" ;
+		pg:group plug:output_group_6 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 44 ;
+		lv2:symbol "audio_out_13" ;
+		lv2:name "Audio Out 13" ;
+		pg:group plug:output_group_7 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 45 ;
+		lv2:symbol "audio_out_14" ;
+		lv2:name "Audio Out 14" ;
+		pg:group plug:output_group_7 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 46 ;
+		lv2:symbol "audio_out_15" ;
+		lv2:name "Audio Out 15" ;
+		pg:group plug:output_group_8 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 47 ;
+		lv2:symbol "audio_out_16" ;
+		lv2:name "Audio Out 16" ;
+		pg:group plug:output_group_8 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 48 ;
+		lv2:symbol "audio_out_17" ;
+		lv2:name "Audio Out 17" ;
+		pg:group plug:output_group_9 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 49 ;
+		lv2:symbol "audio_out_18" ;
+		lv2:name "Audio Out 18" ;
+		pg:group plug:output_group_9 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 50 ;
+		lv2:symbol "audio_out_19" ;
+		lv2:name "Audio Out 19" ;
+		pg:group plug:output_group_10 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 51 ;
+		lv2:symbol "audio_out_20" ;
+		lv2:name "Audio Out 20" ;
+		pg:group plug:output_group_10 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 52 ;
+		lv2:symbol "audio_out_21" ;
+		lv2:name "Audio Out 21" ;
+		pg:group plug:output_group_11 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 53 ;
+		lv2:symbol "audio_out_22" ;
+		lv2:name "Audio Out 22" ;
+		pg:group plug:output_group_11 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 54 ;
+		lv2:symbol "audio_out_23" ;
+		lv2:name "Audio Out 23" ;
+		pg:group plug:output_group_12 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 55 ;
+		lv2:symbol "audio_out_24" ;
+		lv2:name "Audio Out 24" ;
+		pg:group plug:output_group_12 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 56 ;
+		lv2:symbol "audio_out_25" ;
+		lv2:name "Audio Out 25" ;
+		pg:group plug:output_group_13 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 57 ;
+		lv2:symbol "audio_out_26" ;
+		lv2:name "Audio Out 26" ;
+		pg:group plug:output_group_13 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 58 ;
+		lv2:symbol "audio_out_27" ;
+		lv2:name "Audio Out 27" ;
+		pg:group plug:output_group_14 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 59 ;
+		lv2:symbol "audio_out_28" ;
+		lv2:name "Audio Out 28" ;
+		pg:group plug:output_group_14 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 60 ;
+		lv2:symbol "audio_out_29" ;
+		lv2:name "Audio Out 29" ;
+		pg:group plug:output_group_15 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 61 ;
+		lv2:symbol "audio_out_30" ;
+		lv2:name "Audio Out 30" ;
+		pg:group plug:output_group_15 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 62 ;
+		lv2:symbol "audio_out_31" ;
+		lv2:name "Audio Out 31" ;
+		pg:group plug:output_group_16 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#left> ;
+	] , [
+		a lv2:OutputPort , lv2:AudioPort ;
+		lv2:index 63 ;
+		lv2:symbol "audio_out_32" ;
+		lv2:name "Audio Out 32" ;
+		pg:group plug:output_group_16 ;
+		lv2:portProperty lv2:connectionOptional ;
+		lv2:designation <http://lv2plug.in/ns/ext/port-groups#right> ;
+	] , [
+		a lv2:InputPort , atom:AtomPort ;
+		rsz:minimumSize 45128 ;
+		atom:bufferType atom:Sequence ;
+		atom:supports
+			midi:MidiEvent ,
+			patch:Message ,
+			time:Position ;
+		lv2:designation lv2:control ;
+		lv2:index 64 ;
+		lv2:symbol "in" ;
+		lv2:name "In" ;
+	] , [
+		a lv2:OutputPort , atom:AtomPort ;
+		rsz:minimumSize 45128 ;
+		atom:bufferType atom:Sequence ;
+		atom:supports
+			midi:MidiEvent ,
+			patch:Message ;
+		lv2:designation lv2:control ;
+		lv2:index 65 ;
+		lv2:symbol "out" ;
+		lv2:name "Out" ;
+	] , [
+		a lv2:OutputPort , lv2:ControlPort ;
+		lv2:designation lv2:latency ;
+		lv2:symbol "latency" ;
+		lv2:name "Latency" ;
+		lv2:index 66 ;
+		lv2:portProperty lv2:reportsLatency , lv2:integer , lv2:connectionOptional , pprop:notOnGUI ;
+		units:unit units:frame ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:designation lv2:freeWheeling ;
+		lv2:symbol "freeWheeling" ;
+		lv2:name "Free Wheeling" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+		lv2:index 67 ;
+		lv2:portProperty lv2:toggled , lv2:connectionOptional , pprop:notOnGUI ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:designation lv2:enabled ;
+		lv2:symbol "enabled" ;
+		lv2:name "Enabled" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+		lv2:index 68 ;
+		lv2:portProperty lv2:toggled , lv2:connectionOptional , pprop:notOnGUI ;
+	] ;
+	opts:supportedOption
+		bufs:maxBlockLength .
