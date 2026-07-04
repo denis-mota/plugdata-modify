@@ -1,0 +1,375 @@
+/*
+ // Copyright (c) 2022 Timothy Schoen and Wasted Audio
+ // For information on usage and redistribution, and for a DISCLAIMER OF ALL
+ // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
+ */
+#pragma once
+
+class DPFExporter final : public ExporterBase {
+public:
+    Value makerNameValue;
+    Value projectLicenseValue;
+    Value midiinEnableValue = Value(var(0));
+    Value midioutEnableValue = Value(var(0));
+
+    Value lv2EnableValue = Value(var(1));
+    Value vst2EnableValue = Value(var(1));
+    Value vst3EnableValue = Value(var(1));
+    Value clapEnableValue = Value(var(1));
+    Value jackEnableValue = Value(var(0));
+
+    Value exportTypeValue = Value(var(1));
+    Value pluginTypeValue = Value(var(1));
+
+    Value disableSIMD = Value(var(0));
+
+    PropertiesPanelProperty* midiinProperty;
+    PropertiesPanelProperty* midioutProperty;
+
+    DPFExporter(PluginEditor* editor, ExportingProgressView* exportingView)
+        : ExporterBase(editor, exportingView)
+    {
+        PropertiesArray properties;
+        properties.add(new PropertiesPanel::EditableComponent<String>("Maker Name (optional)", makerNameValue));
+        properties.add(new PropertiesPanel::EditableComponent<String>("Project License (optional)", projectLicenseValue));
+        properties.add(new PropertiesPanel::ComboComponent("Export type", exportTypeValue, { "Binary", "Binary + GUI", "Source code", "Source + GUI code" }));
+        properties.add(new PropertiesPanel::ComboComponent("Plugin type", pluginTypeValue, { "Effect", "Instrument", "Custom" }));
+
+        midiinProperty = new PropertiesPanel::BoolComponent("Midi Input", midiinEnableValue, { "No", "yes" });
+        properties.add(midiinProperty);
+        midioutProperty = new PropertiesPanel::BoolComponent("Midi Output", midioutEnableValue, { "No", "yes" });
+        properties.add(midioutProperty);
+
+        PropertiesArray pluginFormats;
+
+        pluginFormats.add(new PropertiesPanel::BoolComponent("LV2", lv2EnableValue, { "No", "Yes" }));
+        lv2EnableValue.addListener(this);
+        pluginFormats.add(new PropertiesPanel::BoolComponent("VST2", vst2EnableValue, { "No", "Yes" }));
+        vst2EnableValue.addListener(this);
+        pluginFormats.add(new PropertiesPanel::BoolComponent("VST3", vst3EnableValue, { "No", "Yes" }));
+        vst3EnableValue.addListener(this);
+        pluginFormats.add(new PropertiesPanel::BoolComponent("CLAP", clapEnableValue, { "No", "Yes" }));
+        clapEnableValue.addListener(this);
+        pluginFormats.add(new PropertiesPanel::BoolComponent("JACK", jackEnableValue, { "No", "Yes" }));
+        jackEnableValue.addListener(this);
+
+        PropertiesArray pro_properties;
+
+        pro_properties.add(new PropertiesPanel::BoolComponent("Disable SIMD", disableSIMD, { "No", "Yes" }));
+
+        for (auto* property : properties) {
+            property->setPreferredHeight(28);
+        }
+        for (auto* property : pluginFormats) {
+            property->setPreferredHeight(28);
+        }
+
+        pluginTypeValue.addListener(this);
+        midiinEnableValue.addListener(this);
+        midioutEnableValue.addListener(this);
+
+        panel.addSection("DPF", properties);
+        panel.addSection("Plugin formats", pluginFormats);
+        panel.addSection("Advanced", pro_properties);
+    }
+
+    void getState(DynamicObject::Ptr globalState) override
+    {
+        auto* state = new DynamicObject();
+        state->setProperty("input_patch_value", getValue<String>(inputPatchValue));
+        state->setProperty("project_name_value", getValue<String>(projectNameValue));
+        state->setProperty("project_copyright_value", getValue<String>(projectCopyrightValue));
+        state->setProperty("maker_name_value", getValue<String>(makerNameValue));
+        state->setProperty("project_license_value", getValue<String>(projectLicenseValue));
+        state->setProperty("midiin_enable_value", getValue<int>(midioutEnableValue));
+        state->setProperty("lv2_enable_value", getValue<int>(lv2EnableValue));
+        state->setProperty("vst2_enable_value", getValue<int>(vst2EnableValue));
+        state->setProperty("vst3_enable_value", getValue<int>(vst3EnableValue));
+        state->setProperty("clap_enable_value", getValue<int>(clapEnableValue));
+        state->setProperty("jack_enable_value", getValue<int>(jackEnableValue));
+        state->setProperty("export_type_value", getValue<int>(exportTypeValue));
+        state->setProperty("plugin_type_value", getValue<int>(pluginTypeValue));
+        state->setProperty("disable_simd", getValue<int>(disableSIMD));
+        globalState->setProperty("dpf", state);
+    }
+
+    void setState(DynamicObject::Ptr globalState) override
+    {
+        auto const state = globalState->getProperty("dpf").getDynamicObject();
+        if (!state)
+            return;
+        inputPatchValue = state->getProperty("input_patch_value");
+        projectNameValue = state->getProperty("project_name_value");
+        projectCopyrightValue = state->getProperty("project_copyright_value");
+        makerNameValue = state->getProperty("maker_name_value");
+        projectLicenseValue = state->getProperty("project_license_value");
+        midioutEnableValue = state->getProperty("midiin_enable_value");
+        lv2EnableValue = state->getProperty("lv2_enable_value");
+        vst2EnableValue = state->getProperty("vst2_enable_value");
+        vst3EnableValue = state->getProperty("vst3_enable_value");
+        clapEnableValue = state->getProperty("clap_enable_value");
+        jackEnableValue = state->getProperty("jack_enable_value");
+        exportTypeValue = state->getProperty("export_type_value");
+        pluginTypeValue = state->getProperty("plugin_type_value");
+        disableSIMD = state->getProperty("disable_simd");
+    }
+
+    void valueChanged(Value& v) override
+    {
+        ExporterBase::valueChanged(v);
+
+        int const pluginType = getValue<int>(pluginTypeValue);
+        midiinProperty->setEnabled(pluginType == 3);
+        midioutProperty->setEnabled(pluginType == 3);
+
+        if (pluginType == 1) {
+            midiinEnableValue.setValue(0);
+            midioutEnableValue.setValue(0);
+        } else if (pluginType == 2) {
+            midiinEnableValue.setValue(1);
+            midioutEnableValue.setValue(0);
+        }
+    }
+
+    bool performExport(String const& pdPatch, String const& outdir, String const& name, String const& copyright, StringArray const& searchPaths) override
+    {
+        exportingView->showState(ExportingProgressView::Exporting);
+
+        auto const heavyPath = pathToString(heavyExecutable);
+        StringArray args = { heavyPath.quoted(), pdPatch.quoted(), "-o", outdir.quoted() };
+
+        args.add("-n" + name);
+
+        if (copyright.isNotEmpty()) {
+            args.add("--copyright");
+            args.add(copyright.quoted());
+        }
+
+        auto const makerName = getValue<String>(makerNameValue);
+        auto const projectLicense = getValue<String>(projectLicenseValue);
+
+        auto const exportType = getValue<int>(exportTypeValue);
+        auto const midiin = getValue<int>(midiinEnableValue);
+        auto const midiout = getValue<int>(midioutEnableValue);
+
+        bool const lv2 = getValue<int>(lv2EnableValue);
+        bool const vst2 = getValue<int>(vst2EnableValue);
+        bool const vst3 = getValue<int>(vst3EnableValue);
+        bool const clap = getValue<int>(clapEnableValue);
+        bool const jack = getValue<int>(jackEnableValue);
+
+        bool const nosimd = getValue<int>(disableSIMD);
+
+        StringArray formats;
+
+        if (lv2) {
+            formats.add("lv2_sep");
+        }
+        if (vst2) {
+            formats.add("vst2");
+        }
+        if (vst3) {
+            formats.add("vst3");
+        }
+        if (clap) {
+            formats.add("clap");
+        }
+        if (jack) {
+            formats.add("jack");
+        }
+
+        DynamicObject::Ptr const metaJson(new DynamicObject());
+
+        var const metaDPF(new DynamicObject());
+        metaDPF.getDynamicObject()->setProperty("project", true);
+        metaDPF.getDynamicObject()->setProperty("description", "Rename Me");
+        if (makerName.isNotEmpty()) {
+            metaDPF.getDynamicObject()->setProperty("maker", makerName);
+        } else {
+            metaDPF.getDynamicObject()->setProperty("maker", "plugdata");
+        }
+        if (projectLicense.isNotEmpty()) {
+            metaDPF.getDynamicObject()->setProperty("license", projectLicense);
+        } else {
+            metaDPF.getDynamicObject()->setProperty("license", "ISC");
+        }
+        metaDPF.getDynamicObject()->setProperty("midi_input", midiin);
+        metaDPF.getDynamicObject()->setProperty("midi_output", midiout);
+        metaDPF.getDynamicObject()->setProperty("plugin_formats", formats);
+
+        if (exportType == 2 || exportType == 4) {
+            metaDPF.getDynamicObject()->setProperty("enable_ui", 2);
+        }
+
+        metaJson->setProperty("dpf", metaDPF);
+        metaJson->setProperty("nosimd", nosimd);
+
+        auto const metaJsonFile = createMetaJson(metaJson);
+        args.add("-m" + pathToString(metaJsonFile));
+
+        args.add("-v");
+        args.add("--gui");
+        args.add("-gdpf");
+
+        args.add("-p");
+        for (auto& path : searchPaths) {
+            args.add(path);
+        }
+        // ponytail: add heavylib path so hvcc finds custom abstractions (drive~, etc.)
+        auto const heavylibPath = ProjectInfo::appDataDir.getChildFile("Abstractions").getChildFile("heavylib");
+        if (heavylibPath.isDirectory()) {
+            args.add(heavylibPath.getFullPathName().quoted());
+        }
+
+        if (shouldQuit)
+            return true;
+
+        auto const command = args.joinIntoString(" ");
+        startShellScript(command);
+
+        waitForProcessToFinish(-1);
+        exportingView->flushConsole();
+
+        if (shouldQuit)
+            return true;
+
+        auto outputFile = File(outdir);
+        outputFile.getChildFile("ir").deleteRecursively();
+        outputFile.getChildFile("hv").deleteRecursively();
+        outputFile.getChildFile("c").deleteRecursively();
+
+        auto const DPF = toolchainDir.getChildFile("lib").getChildFile("dpf");
+        DPF.copyDirectoryTo(outputFile.getChildFile("dpf"));
+
+        if (exportType == 2 || exportType == 4) {
+            auto const DPFGui = toolchainDir.getChildFile("lib").getChildFile("dpf-widgets");
+            DPFGui.copyDirectoryTo(outputFile.getChildFile("dpf-widgets"));
+        }
+
+        // ponytail: copy PDVG for NanoVG GUI support
+        auto pdvgDir = outputFile.getChildFile("pdvg");
+        if (!pdvgDir.isDirectory()) {
+            auto const toolchainPdvg = toolchainDir.getChildFile("lib").getChildFile("pdvg");
+            if (toolchainPdvg.isDirectory()) {
+                toolchainPdvg.copyDirectoryTo(pdvgDir);
+            } else {
+                // Clone PDVG from GitHub if not in toolchain
+                startShellScript("git clone --depth 1 https://github.com/Wasted-Audio/PDVG.git " + pdvgDir.getFullPathName());
+                waitForProcessToFinish(-1);
+            }
+        }
+
+        // ponytail: patch plugin/source/Makefile to add LV2/VST3/CLAP targets + C++17 for PDVG
+        auto pluginMakefile = outputFile.getChildFile("plugin").getChildFile("source").getChildFile("Makefile");
+        if (pluginMakefile.existsAsFile()) {
+            auto content = pluginMakefile.loadFileAsString();
+            StringArray targets;
+            if (lv2)  targets.add("lv2");
+            if (vst3) targets.add("vst3");
+            if (clap) targets.add("clap");
+            if (jack) targets.add("jack");
+            if (targets.isEmpty()) targets.add("jack");
+
+            String targetLine = "TARGETS += " + targets.joinIntoString(" ");
+            content = content.replace("TARGETS += jack", targetLine);
+            // PDVG requires C++17 for inline variables
+            content = content.replace("BUILD_CXX_FLAGS += -Wno-unused-parameter -fno-strict-aliasing -pthread",
+                                      "BUILD_CXX_FLAGS += -Wno-unused-parameter -fno-strict-aliasing -pthread -std=c++17");
+            pluginMakefile.replaceWithData(content.toRawUTF8(), content.getNumBytesAsUTF8());
+        }
+
+        if (exportType == 3 || exportType == 4) {
+            metaJsonFile.copyFileTo(outputFile.getChildFile("meta.json"));
+        }
+
+        // Delay to get correct exit code
+        Time::waitForMillisecondCounter(Time::getMillisecondCounter() + 300);
+
+        bool const generationExitCode = getExitCode();
+        // Check if we need to compile
+        if (!generationExitCode && (exportType == 1 || exportType == 2)) {
+            auto const workingDir = File::getCurrentWorkingDirectory();
+
+            outputFile.setAsCurrentWorkingDirectory();
+
+            auto const bin = toolchainDir.getChildFile("bin");
+            auto make = bin.getChildFile("make" + exeSuffix);
+            auto makefile = outputFile.getChildFile("Makefile");
+
+#if JUCE_MAC
+            startShellScript("make -j4 -f " + makefile.getFullPathName());
+#elif JUCE_WINDOWS
+            auto path = "export PATH=\"$PATH:" + pathToString(toolchainDir.getChildFile("bin")) + "\"\n";
+            auto cc = "CC=" + pathToString(toolchainDir.getChildFile("bin").getChildFile("gcc.exe")) + " ";
+            auto cxx = "CXX=" + pathToString(toolchainDir.getChildFile("bin").getChildFile("g++.exe")) + " ";
+            auto shell = " SHELL=" + pathToString(toolchainDir.getChildFile("bin").getChildFile("bash.exe")).quoted();
+            startShellScript(path + cc + cxx + pathToString(make) + " -j4 -f " + pathToString(makefile) + shell);
+#else // Linux or BSD
+            auto prepareEnvironmentScript = pathToString(toolchainDir.getChildFile("scripts").getChildFile("anywhere-setup.sh")) + "\n";
+            auto buildScript = prepareEnvironmentScript
+                + pathToString(make)
+                + " -j4 -f " + pathToString(makefile);
+
+            // For some reason we need to do this again
+            outputFile.getChildFile("dpf").getChildFile("utils").getChildFile("generate-ttl.sh").setExecutePermission(true);
+            toolchainDir.getChildFile("scripts").getChildFile("anywhere-setup.sh").getChildFile("generate-ttl.sh").setExecutePermission(true);
+
+            startShellScript(buildScript);
+#endif
+
+            waitForProcessToFinish(-1);
+            exportingView->flushConsole();
+
+            // Delay to get correct exit code
+            Time::waitForMillisecondCounter(Time::getMillisecondCounter() + 300);
+
+            workingDir.setAsCurrentWorkingDirectory();
+
+            // Copy output
+            if (lv2)
+                outputFile.getChildFile("bin").getChildFile(name + ".lv2").copyDirectoryTo(outputFile.getChildFile(name + ".lv2"));
+            if (vst3)
+                outputFile.getChildFile("bin").getChildFile(name + ".vst3").copyDirectoryTo(outputFile.getChildFile(name + ".vst3"));
+            if (vst2)
+#if JUCE_WINDOWS
+                OSUtils::moveFileTo(outputFile.getChildFile("bin").getChildFile(name + "-vst.dll"), outputFile.getChildFile(name + "-vst.dll"));
+#elif JUCE_LINUX
+                OSUtils::moveFileTo(outputFile.getChildFile("bin").getChildFile(name + "-vst.so"), outputFile.getChildFile(name + "-vst.so"));
+#elif JUCE_MAC
+                OSUtils::moveFileTo(outputFile.getChildFile("bin").getChildFile(name + ".vst"), outputFile.getChildFile(name + ".vst"));
+#endif
+            if (clap)
+                OSUtils::moveFileTo(outputFile.getChildFile("bin").getChildFile(name + ".clap"), outputFile.getChildFile(name + ".clap"));
+            if (jack) {
+#if JUCE_MAC
+                if (exportType == 2) {
+                    OSUtils::moveFileTo(outputFile.getChildFile("bin").getChildFile(name + ".app"), outputFile.getChildFile(name + ".app"));
+                } else {
+                    OSUtils::moveFileTo(outputFile.getChildFile("bin").getChildFile(name), outputFile.getChildFile(name));
+                }
+#elif JUCE_WINDOWS
+                OSUtils::moveFileTo(outputFile.getChildFile("bin").getChildFile(name + ".exe"), outputFile.getChildFile(name + ".exe"));
+#else
+                OSUtils::moveFileTo(outputFile.getChildFile("bin").getChildFile(name), outputFile.getChildFile(name));
+#endif
+            }
+
+            bool const compilationExitCode = getExitCode();
+
+            // Clean up if successful
+            if (!compilationExitCode) {
+                outputFile.getChildFile("dpf").deleteRecursively();
+                outputFile.getChildFile("dpf-widgets").deleteRecursively();
+                outputFile.getChildFile("build").deleteRecursively();
+                outputFile.getChildFile("plugin").deleteRecursively();
+                outputFile.getChildFile("bin").deleteRecursively();
+                outputFile.getChildFile("README.md").deleteFile();
+                outputFile.getChildFile("Makefile").deleteFile();
+            }
+
+            return compilationExitCode;
+        }
+
+        return generationExitCode;
+    }
+};

@@ -1,0 +1,345 @@
+/*
+ // Copyright (c) 2022 Timothy Schoen and Wasted Audio
+ // For information on usage and redistribution, and for a DISCLAIMER OF ALL
+ // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
+ */
+#pragma once
+
+#include "PluginEditor.h"
+#include "PluginProcessor.h"
+#include "Pd/Patch.h"
+
+struct ExporterBase : public Component
+    , public Value::Listener
+    , public ThreadPool {
+
+    ChildProcess process;
+    TextButton exportButton = TextButton("Export");
+
+    Value inputPatchValue = SynchronousValue();
+    Value projectNameValue;
+    Value projectCopyrightValue;
+
+    bool blockDialog = false;
+
+#if JUCE_WINDOWS
+    static inline File const toolchainDir = ProjectInfo::appDataDir.getChildFile("Toolchain").getChildFile("usr");
+    static inline String const exeSuffix = ".exe";
+#else
+    static inline File const toolchainDir = ProjectInfo::appDataDir.getChildFile("Toolchain");
+    static inline String const exeSuffix = "";
+#endif
+
+    static inline File heavyExecutable = toolchainDir.getChildFile("bin").getChildFile("Heavy").getChildFile("Heavy" + exeSuffix);
+    static inline SmallArray<File> tempFilesToDelete;
+
+    bool validPatchSelected = false;
+    bool canvasDirty = false;
+    bool isTempFile = false;
+
+    File patchFile;
+    File openedPatchFile;
+    File realPatchFile;
+
+    PropertiesPanel panel;
+
+    ExportingProgressView* exportingView;
+
+    bool shouldQuit = false;
+
+    Label unsavedLabel = Label("", "Warning: patch has unsaved changes");
+    PluginEditor* editor;
+
+    ExporterBase(PluginEditor* pluginEditor, ExportingProgressView* exportView)
+        : ThreadPool(1, Thread::osDefaultStackSize, Thread::Priority::highest)
+        , exportingView(exportView)
+        , editor(pluginEditor)
+    {
+        addAndMakeVisible(exportButton);
+
+        auto const backgroundColour = PlugDataColours::panelBackgroundColour;
+        exportButton.setColour(TextButton::buttonColourId, backgroundColour.contrasting(0.05f));
+        exportButton.setColour(TextButton::buttonOnColourId, backgroundColour.contrasting(0.1f));
+        exportButton.setColour(ComboBox::outlineColourId, Colours::transparentBlack);
+
+        PropertiesArray properties;
+
+        auto* patchChooser = new PropertiesPanel::ComboComponent("Patch to export", inputPatchValue, { "Currently opened patch", "Other patch (browse)" });
+        patchChooser->comboBox.setTextWhenNothingSelected("Choose a patch to export...");
+        patchChooser->comboBox.setSelectedId(-1);
+        properties.add(patchChooser);
+
+        auto* nameProperty = new PropertiesPanel::EditableComponent<String>("Project Name (optional)", projectNameValue);
+        nameProperty->setInputRestrictions("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
+        properties.add(nameProperty);
+
+        properties.add(new PropertiesPanel::EditableComponent<String>("Project Copyright (optional)", projectCopyrightValue));
+
+        for (auto* property : properties) {
+            property->setPreferredHeight(28);
+        }
+
+        panel.addSection("General", properties);
+
+        panel.setContentWidth(400);
+
+        addAndMakeVisible(panel);
+        inputPatchValue.addListener(this);
+        projectNameValue.addListener(this);
+        projectCopyrightValue.addListener(this);
+
+        if (auto const* cnv = editor->getCurrentCanvas()) {
+            openedPatchFile = File::createTempFile(".pd");
+            deleteTempFileLater(openedPatchFile);
+            patchFile = cnv->patch.getCurrentFile();
+            if (!patchFile.existsAsFile()) {
+                openedPatchFile.replaceWithText(cnv->patch.getCanvasContent(), false, false, "\n");
+                patchChooser->comboBox.setItemEnabled(1, true);
+                patchChooser->comboBox.setSelectedId(1);
+                realPatchFile = patchFile;
+                patchFile = openedPatchFile;
+                canvasDirty = false;
+                isTempFile = true;
+            } else {
+                canvasDirty = cnv->patch.isDirty();
+                openedPatchFile = patchFile;
+                realPatchFile = patchFile;
+            }
+
+            if (realPatchFile.existsAsFile()) {
+                projectNameValue = realPatchFile.getFileNameWithoutExtension();
+            }
+        } else {
+            patchChooser->comboBox.setItemEnabled(1, false);
+            patchChooser->comboBox.setSelectedId(0);
+            validPatchSelected = false;
+            canvasDirty = false;
+        }
+
+        exportButton.onClick = [this] {
+            Dialogs::showSaveDialog([this](URL const& url) {
+                auto const result = url.getLocalFile();
+                if (result.getParentDirectory().exists()) {
+                    startExport(result);
+                }
+            },
+                "", "HeavyExport", nullptr, true);
+        };
+
+        unsavedLabel.setColour(Label::textColourId, Colours::orange);
+        addChildComponent(unsavedLabel);
+    }
+
+    ~ExporterBase() override
+    {
+        if (openedPatchFile.existsAsFile() && isTempFile) {
+            openedPatchFile.deleteFile();
+        }
+
+        shouldQuit = true;
+        if (process.isRunning())
+            process.kill();
+        removeAllJobs(true, -1);
+    }
+
+    void startProcess(String const& command)
+    {
+        process.start(command);
+    }
+
+    uint32 getExitCode() const
+    {
+        return process.getExitCode();
+    }
+
+    ChildProcess* getProcess()
+    {
+        return &process;
+    }
+
+    bool waitForProcessToFinish(int timeoutMs)
+    {
+        return process.waitForProcessToFinish(timeoutMs);
+    }
+
+    virtual void getState(DynamicObject::Ptr state) = 0;
+    virtual void setState(DynamicObject::Ptr state) = 0;
+
+    String pathToString(File const& file)
+    {
+#if JUCE_WINDOWS
+        return file.getFullPathName().replaceCharacter('\\', '/');
+#else
+        return file.getFullPathName();
+#endif
+    }
+
+    static void deleteTempFileLater(File const& script)
+    {
+        tempFilesToDelete.add(script);
+    }
+
+    static void deleteTempFiles()
+    {
+        for (auto& file : tempFilesToDelete) {
+            if (file.existsAsFile())
+                file.deleteFile();
+            if (file.isDirectory())
+                file.deleteRecursively();
+        }
+    }
+
+    String startShellScriptWithOutput(String const& scriptText)
+    {
+        exportingView->logToConsole("\n\x1b[1;34m> " + scriptText + " \x1b[0m \n\n");
+
+        File scriptFile = File::createTempFile(".sh");
+        deleteTempFileLater(scriptFile);
+
+        auto const bash = String("#!/bin/bash\n");
+        scriptFile.replaceWithText(bash + scriptText, false, false, "\n");
+
+        ChildProcess process;
+
+#if JUCE_WINDOWS
+        auto sh = toolchainDir.getChildFile("bin").getChildFile("sh.exe");
+        auto arguments = StringArray { sh.getFullPathName(), "--login", scriptFile.getFullPathName().replaceCharacter('\\', '/') };
+#else
+        scriptFile.setExecutePermission(true);
+        auto arguments = scriptFile.getFullPathName();
+#endif
+        process.start(arguments, ChildProcess::wantStdOut | ChildProcess::wantStdErr);
+        return process.readAllProcessOutput();
+    }
+
+    void startShellScript(String const& scriptText)
+    {
+        exportingView->logToConsole("\n\x1b[1;92m> " + scriptText + " \x1b[0m \n\n");
+
+        File scriptFile = File::createTempFile(".sh");
+        deleteTempFileLater(scriptFile);
+
+#if JUCE_WINDOWS
+        auto const gccColourFlags = String("export CFLAGS=\"-fdiagnostics-color=always\"\nexport CXXFLAGS=\"-fdiagnostics-color=always\"\n ");
+#else
+        auto const gccColourFlags = String("export TERM=xterm-256color\nexport GCC_URLS=no\n");
+#endif
+        auto const bash = String("#!/bin/bash\n");
+        scriptFile.replaceWithText(bash + gccColourFlags + scriptText, false, false, "\n");
+
+#if JUCE_WINDOWS
+        auto sh = toolchainDir.getChildFile("bin").getChildFile("sh.exe");
+        process.start(StringArray { sh.getFullPathName(), "--login", scriptFile.getFullPathName().replaceCharacter('\\', '/') });
+#else
+        scriptFile.setExecutePermission(true);
+        process.start(scriptFile.getFullPathName(), ChildProcess::wantStdOut | ChildProcess::wantStdErr | ChildProcess::wantTtyOut);
+#endif
+    }
+
+    void startExport(File const& outDir)
+    {
+        auto patchPath = pathToString(patchFile);
+        auto const& outPath = pathToString(outDir);
+
+        auto projectTitle = projectNameValue.toString();
+        auto projectCopyright = projectCopyrightValue.toString();
+
+        if (!projectTitle.unquoted().containsNonWhitespaceChars()) {
+            if (!realPatchFile.getFileNameWithoutExtension().isEmpty())
+                projectTitle = realPatchFile.getFileNameWithoutExtension();
+            else
+                projectTitle = "Untitled";
+        }
+        // Replace dash and space with underscore
+        projectTitle = projectTitle.replaceCharacter('-', '_').replaceCharacter(' ', '_');
+
+        // Add original file location to search paths
+        auto searchPaths = StringArray { };
+        if (realPatchFile.existsAsFile() && !realPatchFile.isRoot()) // Make sure file actually exists
+        {
+            searchPaths.add(pathToString(realPatchFile.getParentDirectory()).quoted());
+        }
+        editor->pd->setThis();
+
+        // Get pd's search paths
+        char* paths[1024];
+        int numItems;
+        pd::Interface::getSearchPaths(paths, &numItems);
+
+        for (int i = 0; i < numItems; i++) {
+            searchPaths.add(String(paths[i]).quoted());
+        }
+
+        // Make sure we don't add the file location twice
+        searchPaths.removeDuplicates(false);
+        addJob([this, patchPath, outPath, projectTitle, projectCopyright, searchPaths]() mutable {
+            exportingView->monitorProcessOutput(getProcess());
+            exportingView->showState(ExportingProgressView::Exporting);
+
+            FileSystemWatcher::addGlobalIgnorePath(outPath);
+
+            auto const result = performExport(patchPath, outPath, projectTitle, projectCopyright, searchPaths);
+
+            if (shouldQuit)
+                return;
+
+            exportingView->showState(result ? ExportingProgressView::Failure : ExportingProgressView::Success);
+
+            exportingView->stopMonitoring();
+
+            MessageManager::callAsync([this] {
+                repaint();
+            });
+
+            FileSystemWatcher::removeGlobalIgnorePath(outPath);
+        });
+    }
+
+    void valueChanged(Value& v) override
+    {
+        if (v.refersToSameSourceAs(inputPatchValue)) {
+            int const idx = getValue<int>(v);
+
+            if (idx == 1) {
+                patchFile = openedPatchFile;
+                validPatchSelected = true;
+                unsavedLabel.setVisible(canvasDirty);
+            } else if (idx == 2 && !blockDialog) {
+                Dialogs::showOpenDialog([this](URL const& url) {
+                    auto const result = url.getLocalFile();
+                    if (result.existsAsFile()) {
+                        patchFile = result;
+                        validPatchSelected = true;
+                    } else {
+                        inputPatchValue = -1;
+                        patchFile = "";
+                        validPatchSelected = false;
+                    }
+                    unsavedLabel.setVisible(false);
+                },
+                    true, false, "*.pd", "HeavyPatchLocation", nullptr);
+            }
+        }
+
+        exportButton.setEnabled(validPatchSelected);
+    }
+
+    void resized() override
+    {
+        unsavedLabel.setBounds(10, getHeight() - 42, getWidth(), 42);
+        panel.setBounds(0, 0, getWidth(), getHeight() - 50);
+        exportButton.setBounds(getLocalBounds().removeFromBottom(23).removeFromRight(80).translated(-10, -10));
+    }
+
+    static File createMetaJson(DynamicObject::Ptr const& metaJson)
+    {
+        auto const metadata = File::createTempFile(".json");
+        deleteTempFileLater(metadata);
+        String const metaString = JSON::toString(var(metaJson.get()));
+        metadata.replaceWithText(metaString, false, false, "\n");
+        return metadata;
+    }
+
+private:
+    virtual bool performExport(String const& pdPatch, String const& outdir, String const& name, String const& copyright, StringArray const& searchPaths) = 0;
+};

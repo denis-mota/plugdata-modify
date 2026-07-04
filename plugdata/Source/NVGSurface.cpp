@@ -1,0 +1,527 @@
+/*
+ // Copyright (c) 2021-2025 Timothy Schoen and Alex Mitchell
+ // For information on usage and redistribution, and for a DISCLAIMER OF ALL
+ // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
+ */
+
+#include <juce_gui_basics/juce_gui_basics.h>
+#include <juce_opengl/juce_opengl.h>
+#include <BinaryData.h>
+
+using namespace juce::gl;
+
+#include <nanovg.h>
+#ifdef NANOVG_GL_IMPLEMENTATION
+#    include <nanovg_gl.h>
+#    include <nanovg_gl_utils.h>
+#    if JUCE_LINUX || JUCE_BSD
+void nvgluSetCornerRadius(float radius, bool left, bool right);
+#    endif
+#endif
+
+#include "NVGSurface.h"
+#include "Utility/NVGGraphicsContext.h"
+#include "PluginEditor.h"
+#include "PluginProcessor.h"
+
+#define ENABLE_FPS_COUNT 0
+
+class FrameTimer {
+public:
+    FrameTimer()
+    {
+        startTime = getNow();
+        prevTime = startTime;
+    }
+
+    void render(NVGcontext* nvg, int const width, int const height, float const scale)
+    {
+        nvgBeginFrame(nvg, width, height, scale);
+
+        nvgFillColor(nvg, nvgRGBA(40, 40, 40, 255));
+        nvgFillRect(nvg, 0, 0, 40, 22);
+
+        nvgFontSize(nvg, 20.0f);
+        nvgTextAlign(nvg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
+        nvgFillColor(nvg, nvgRGBA(240, 240, 240, 255));
+        StackArray<char, 16> fpsBuf;
+        snprintf(fpsBuf.data(), 16, "%d", static_cast<int>(round(1.0f / getAverageFrameTime())));
+        nvgText(nvg, 7, 2, fpsBuf.data(), nullptr);
+
+        nvgGlobalScissor(nvg, 0, 0, 40 * scale, 22 * scale);
+        nvgEndFrame(nvg);
+    }
+    void addFrameTime()
+    {
+        auto const timeSeconds = getTime();
+        auto const dt = timeSeconds - prevTime;
+        perf_head = (perf_head + 1) % 32;
+        frame_times[perf_head] = dt;
+        prevTime = timeSeconds;
+    }
+
+    double getTime() const { return getNow() - startTime; }
+
+private:
+    static double getNow()
+    {
+        auto const ticks = Time::getHighResolutionTicks();
+        return Time::highResolutionTicksToSeconds(ticks);
+    }
+
+    float getAverageFrameTime() const
+    {
+        float avg = 0;
+        for (int i = 0; i < 32; i++) {
+            avg += frame_times[i];
+        }
+        return avg / static_cast<float>(32);
+    }
+
+    float frame_times[32] = { };
+    int perf_head = 0;
+    double startTime = 0, prevTime = 0;
+};
+
+NVGSurface::NVGSurface(PluginEditor* e)
+    : editor(e)
+{
+#ifdef NANOVG_GL_IMPLEMENTATION
+    glContext = std::make_unique<OpenGLContext>();
+    auto pixelFormat = OpenGLPixelFormat(8, 8, 16, 8);
+    glContext->setPixelFormat(pixelFormat);
+#    ifdef NANOVG_GL3_IMPLEMENTATION
+    glContext->setOpenGLVersionRequired(OpenGLContext::OpenGLVersion::openGL3_2);
+#    endif
+    glContext->setSwapInterval(0);
+#endif
+
+#if ENABLE_FPS_COUNT
+    frameTimer = std::make_unique<FrameTimer>();
+#endif
+
+    setInterceptsMouseClicks(false, false);
+    setWantsKeyboardFocus(false);
+
+    setSize(1, 1);
+
+    backupImageComponent.setInterceptsMouseClicks(false, false);
+    editor->addChildComponent(backupImageComponent);
+
+    // Start rendering asynchronously, so we are sure the window has been added to the desktop
+    // kind of a hack, but works well enough
+    MessageManager::callAsync([_this = SafePointer(this)] {
+        if (_this) {
+            _this->vBlankAttachment = std::make_unique<VBlankAttachment>(_this.getComponent(), [_this]() {
+                _this->render();
+            });
+        }
+    });
+}
+
+NVGSurface::~NVGSurface()
+{
+    detachContext();
+}
+
+void NVGSurface::initialise()
+{
+#ifdef NANOVG_METAL_IMPLEMENTATION
+    auto* peer = getPeer()->getNativeHandle();
+    auto* view = OSUtils::MTLCreateView(peer, 0, 0, getWidth(), getHeight());
+    setView(view);
+    setVisible(true);
+
+    lastRenderScale = calculateRenderScale();
+    nvg = nvgCreateContext(view, 0, getWidth() * lastRenderScale, getHeight() * lastRenderScale);
+#else
+    setVisible(true);
+    glContext->attachTo(*this);
+    glContext->initialiseOnThread();
+    glContext->makeActive();
+    lastRenderScale = calculateRenderScale();
+    nvg = nvgCreateContext(0);
+#endif
+    if (!nvg) {
+        static bool isShowingMessageBox = false;
+        if (!isShowingMessageBox) {
+            isShowingMessageBox = true;
+            std::cerr << "could not initialise nvg" << std::endl;
+            AlertWindow::showMessageBoxAsync(MessageBoxIconType::WarningIcon,
+                "Could not initialize plugdata",
+                "Please check that you have up-to-date graphics drivers installed. At least OpenGL 3.0 support is required to run plugdata.",
+                "OK",
+                nullptr,
+                nullptr);
+        }
+
+        return;
+    }
+
+#if JUCE_LINUX || JUCE_BSD
+    nvgluSetCornerRadius(12.0f * lastRenderScale, roundedRight, roundedRight);
+#endif
+
+    surfaces[nvg] = this;
+
+    nvgAtlasTextThreshold(nvg, 32.0f);
+    nvgCreateFontMem(nvg, "Inter-Regular", BinaryData::getResourceCopy(BinaryData::InterRegular_ttf), BinaryData::getResourceSize(BinaryData::InterRegular_ttf), 0);
+    nvgCreateFontMem(nvg, "Inter-Bold", BinaryData::getResourceCopy(BinaryData::InterBold_ttf), BinaryData::getResourceSize(BinaryData::InterBold_ttf), 0);
+    nvgCreateFontMem(nvg, "Inter-Tabular", BinaryData::getResourceCopy(BinaryData::InterTabular_ttf), BinaryData::getResourceSize(BinaryData::InterTabular_ttf), 0);
+    nvgCreateFontMem(nvg, "icon_font-Regular", BinaryData::getResourceCopy(BinaryData::IconFont_ttf), BinaryData::getResourceSize(BinaryData::IconFont_ttf), 0);
+    updateWindowContextVisibility();
+}
+
+void NVGSurface::updateWindowContextVisibility()
+{
+    if (renderThroughImage == isRenderingThroughImage)
+        return;
+
+    isRenderingThroughImage = renderThroughImage;
+
+    // Render a frame to the new target before showing/hiding GPU context
+    renderAll();
+
+#ifdef NANOVG_GL_IMPLEMENTATION
+    if (glContext)
+        glContext->setVisible(!renderThroughImage);
+#else
+    if (auto* view = getView()) {
+        OSUtils::MTLSetVisible(view, !renderThroughImage);
+    }
+#endif
+
+    invalidateAll();
+}
+
+void NVGSurface::detachContext()
+{
+    if (makeContextActive()) {
+        editor->getNanoLLGC()->removeCachedImages();
+        NVGFramebuffer::clearAll(nvg);
+        NVGImage::clearAll(nvg);
+        NVGCachedPath::clearAll(nvg);
+
+        if (invalidFBO) {
+            nvgDeleteFramebuffer(invalidFBO);
+            invalidFBO = nullptr;
+        }
+        if (nvg) {
+            nvgDeleteContext(nvg);
+            nvg = nullptr;
+            surfaces.erase(nvg);
+        }
+
+#ifdef NANOVG_METAL_IMPLEMENTATION
+        if (auto* view = getView()) {
+            OSUtils::MTLDeleteView(view);
+            setView(nullptr);
+        }
+#else
+        glContext->detach();
+#endif
+        isRenderingThroughImage = false;
+    }
+}
+
+void NVGSurface::updateBufferSize()
+{
+    float const pixelScale = getRenderScale();
+    int const scaledWidth = std::max<int>(getWidth() * pixelScale, 1);
+    int const scaledHeight = std::max<int>(getHeight() * pixelScale, 1);
+
+    if (fbWidth != scaledWidth || fbHeight != scaledHeight || !invalidFBO) {
+        if (invalidFBO)
+            nvgDeleteFramebuffer(invalidFBO);
+        invalidFBO = nvgCreateFramebuffer(nvg, scaledWidth, scaledHeight, 0);
+        fbWidth = scaledWidth;
+        fbHeight = scaledHeight;
+        invalidArea = getLocalBounds();
+    }
+}
+
+void NVGSurface::lookAndFeelChanged()
+{
+    if (makeContextActive()) {
+        NVGFramebuffer::clearAll(nvg);
+        NVGImage::clearAll(nvg);
+        invalidateAll();
+    }
+}
+
+bool NVGSurface::makeContextActive()
+{
+#ifdef NANOVG_METAL_IMPLEMENTATION
+    // No need to make context active with Metal, so just check if we have initialised and return that
+    return getView() != nullptr && nvg != nullptr && mnvgDevice(nvg) != nullptr;
+#else
+    if (glContext && glContext->makeActive()) {
+        if (renderThroughImage)
+            updateWindowContextVisibility();
+        return true;
+    }
+
+    return false;
+#endif
+}
+
+float NVGSurface::calculateRenderScale() const
+{
+#ifdef NANOVG_METAL_IMPLEMENTATION
+    return OSUtils::MTLGetPixelScale(getView()) * Desktop::getInstance().getGlobalScaleFactor();
+#else
+    return glContext->getRenderingScale();
+#endif
+}
+
+float NVGSurface::getRenderScale() const
+{
+    return lastRenderScale;
+}
+
+void NVGSurface::updateBounds(Rectangle<int> const bounds)
+{
+    currentBounds = bounds;
+
+#if JUCE_LINUX || JUCE_BSD
+    // Directly setting bounds gives the best result on Linux
+    setBounds(bounds);
+#endif
+
+#ifdef NANOVG_GL_IMPLEMENTATION
+    updateWindowContextVisibility();
+#endif
+
+    invalidateAll();
+}
+
+void NVGSurface::resized()
+{
+#if JUCE_LINUX || JUCE_BSD
+    Path clipPath;
+    clipPath.addRoundedRectangle(0, 0, getWidth(), getHeight(), Corners::windowCornerRadius, Corners::windowCornerRadius, roundedLeft, roundedRight, roundedLeft, roundedRight);
+    backupImageComponent.setClipPath(clipPath);
+#endif
+    backupImageComponent.setBounds(editor->getLocalArea(this, getLocalBounds()));
+    invalidateAll();
+}
+
+void NVGSurface::invalidateAll()
+{
+    invalidArea = invalidArea.getUnion(getLocalBounds());
+}
+
+void NVGSurface::invalidateArea(Rectangle<int> const area)
+{
+    invalidArea = invalidArea.getUnion(area);
+}
+
+void NVGSurface::renderAll()
+{
+    invalidateAll();
+    render();
+}
+
+void NVGSurface::render()
+{
+    if (renderThroughImage) {
+        auto const startTime = Time::getMillisecondCounter();
+        if (startTime - lastRenderTime < 32) {
+            return; // When rendering through juce::image, limit framerate to 30 fps
+        }
+        lastRenderTime = startTime;
+    }
+
+    if (!getPeer()) {
+        return;
+    }
+
+    // Do this right before rendering, so that it doesn't show a frame with the last rendered content skewed to the new view size
+    if (getBounds() != currentBounds) {
+        setBounds(currentBounds);
+    }
+
+#if JUCE_LINUX
+    if (skipFrame) {
+        // On Linux, there is a strange bug where repaints will be executed immediately if the last repaint took too long
+        // This will then completely occupy the message thread, leaving no space for handling interaction...
+        // So if our rendering took too long, we need to manually skip a frame
+        skipFrame = false;
+        return;
+    }
+    auto start = Time::getMillisecondCounter();
+#endif
+
+    if (!nvg) {
+        initialise();
+        if (!nvg) {
+            return;
+        }
+    }
+
+    if (!makeContextActive()) {
+        return;
+    }
+
+    auto pixelScale = calculateRenderScale();
+    auto const desktopScale = Desktop::getInstance().getGlobalScaleFactor();
+    auto const devicePixelScale = pixelScale / desktopScale;
+
+    if (std::abs(lastRenderScale - pixelScale) > 0.1f) {
+        detachContext();
+        initialise();
+        return; // Render on next frame
+    }
+
+#if NANOVG_METAL_IMPLEMENTATION
+    if (pixelScale == 0) // This happens sometimes when an AUv3 plugin is hidden behind the parameter control view
+        return;
+#else
+    auto viewWidth = getWidth() * pixelScale;
+    auto viewHeight = getHeight() * pixelScale;
+
+    // In case we apply a global scale factor, calculate the necessary fractional offset for glViewport size
+    if (!approximatelyEqual(desktopScale, 1.0f)) {
+        auto desktopScaleOffsetX = getWidth() * desktopScale;
+        auto desktopScaleOffsetY = getHeight() * desktopScale;
+        viewWidth += (std::ceil(desktopScaleOffsetX) - desktopScaleOffsetX) * devicePixelScale;
+        viewHeight += (std::ceil(desktopScaleOffsetY) - desktopScaleOffsetY) * devicePixelScale;
+    }
+#endif
+
+#if ENABLE_FPS_COUNT
+    frameTimer->addFrameTime();
+#endif
+
+    updateBufferSize();
+
+    invalidArea = invalidArea.getIntersection(getLocalBounds());
+
+    for (auto bufferedObject : bufferedObjects) {
+        if (bufferedObject)
+            bufferedObject->updateFramebuffers(nvg);
+    }
+
+    if (!invalidArea.isEmpty()) {
+        // Draw only the invalidated region on top of framebuffer
+        nvgBindFramebuffer(invalidFBO);
+#ifdef NANOVG_GL_IMPLEMENTATION
+        nvgViewport(0, 0, viewWidth, viewHeight);
+#endif
+        nvgBeginFrame(nvg, getWidth() * desktopScale, getHeight() * desktopScale, devicePixelScale);
+        nvgScale(nvg, desktopScale, desktopScale);
+        editor->renderArea(nvg, invalidArea);
+        nvgGlobalScissor(nvg, invalidArea.getX() * pixelScale, invalidArea.getY() * pixelScale, invalidArea.getWidth() * pixelScale, invalidArea.getHeight() * pixelScale);
+        nvgEndFrame(nvg);
+
+#if ENABLE_FPS_COUNT
+        frameTimer->render(nvg, getWidth(), getHeight(), pixelScale);
+#endif
+
+        if (renderThroughImage) {
+            renderFrameToImage(backupRenderImage, invalidArea);
+        } else {
+            needsBufferSwap = true;
+        }
+        invalidArea = Rectangle<int>(0, 0, 0, 0);
+    }
+
+    if (needsBufferSwap) {
+        blitToScreen();
+        needsBufferSwap = false;
+    }
+
+#if JUCE_LINUX
+    auto* display = Desktop::getInstance().getDisplays().getPrimaryDisplay();
+    auto refreshRate = display ? display->verticalFrequencyHz.value_or(60.0) : 60.0;
+    if (Time::getMillisecondCounter() - start > (1000 / refreshRate)) {
+        skipFrame = true;
+    }
+#endif
+}
+
+void NVGSurface::blitToScreen()
+{
+    if (!makeContextActive() || !invalidFBO) {
+        return;
+    }
+
+    auto pixelScale = calculateRenderScale();
+
+#if NANOVG_METAL_IMPLEMENTATION
+    auto const devicePixelScale = pixelScale / Desktop::getInstance().getGlobalScaleFactor();
+    auto viewWidth = getWidth() * devicePixelScale;
+    auto viewHeight = getHeight() * devicePixelScale;
+    if (auto* view = getView()) {
+        mnvgSetViewBounds(view, getWidth() * pixelScale, getHeight() * pixelScale);
+    }
+#else
+    auto viewWidth = getWidth() * pixelScale;
+    auto viewHeight = getHeight() * pixelScale;
+#endif
+
+    nvgBindFramebuffer(nullptr);
+    nvgBlitFramebuffer(nvg, invalidFBO, 0, 0, viewWidth, viewHeight);
+
+#ifdef NANOVG_GL_IMPLEMENTATION
+    glContext->swapBuffers();
+#endif
+}
+
+#if JUCE_LINUX || JUCE_BSD
+void NVGSurface::setRoundedBottomCorners(bool left, bool right)
+{
+    roundedLeft = left;
+    roundedRight = right;
+    nvgluSetCornerRadius(12.0f * lastRenderScale, roundedLeft, roundedRight);
+}
+#endif
+
+void NVGSurface::renderFrameToImage(Image& image, Rectangle<int> const area)
+{
+    nvgBindFramebuffer(nullptr);
+
+    if (!image.isValid() || image.getWidth() != fbWidth || image.getHeight() != fbHeight) {
+        image = Image(Image::PixelFormat::ARGB, fbWidth, fbHeight, true);
+    }
+
+    Image::BitmapData imageData(image, Image::BitmapData::writeOnly);
+    auto region = (area.getIntersection(getLocalBounds()).toFloat() * getRenderScale()).getSmallestIntegerContainer().getIntersection({ fbWidth, fbHeight });
+    nvgReadPixels(nvg, invalidFBO, 0, region.getY(), fbWidth, region.getHeight(), fbHeight, imageData.getLinePointer(region.getY()));
+
+    backupImageComponent.setImage(image);
+    backupImageComponent.repaint(area);
+}
+
+void NVGSurface::setRenderThroughImage(bool const shouldRenderThroughImage)
+{
+    renderThroughImage = shouldRenderThroughImage;
+    backupImageComponent.setVisible(shouldRenderThroughImage);
+    if (!shouldRenderThroughImage)
+        backupRenderImage = Image();
+}
+
+NVGSurface* NVGSurface::getSurfaceForContext(NVGcontext* nvg)
+{
+    auto const nvgIter = surfaces.find(nvg);
+    if (nvgIter != surfaces.end()) {
+        return nvgIter->second;
+    }
+
+    return nullptr;
+}
+
+void NVGSurface::addBufferedObject(NVGComponent* component)
+{
+    bufferedObjects.insert(component);
+}
+
+void NVGSurface::removeBufferedObject(NVGComponent* component)
+{
+    bufferedObjects.erase(component);
+}
+
+void NVGSurface::handleCommandMessage(int commandID)
+{
+    needsBufferSwap = true;
+}

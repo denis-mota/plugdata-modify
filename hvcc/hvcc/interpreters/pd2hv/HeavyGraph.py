@@ -1,0 +1,81 @@
+# Copyright (C) 2014-2018 Enzien Audio, Ltd.
+# Copyright (C) 2023-2026 Wasted Audio
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import json
+
+from typing import Optional
+from pathlib import Path
+
+from .PdObject import PdObject
+from .HeavyObject import HeavyObject
+
+from hvcc.types.Heavy import Heavy
+
+
+class HeavyGraph(PdObject):
+    def __init__(
+        self,
+        hv_path: Path,
+        obj_args: Optional[list] = None,
+        pos_x: int = 0,
+        pos_y: int = 0
+    ) -> None:
+        super().__init__(hv_path.name.split(".")[0], obj_args, pos_x, pos_y)
+
+        # read the heavy graph
+        with open(hv_path, "r") as f:
+            self.hv_json = Heavy(**json.load(f))
+
+        # parse the heavy data structure to determine the outlet connection type
+        outlets = [o for o in self.hv_json.objects.values() if o.type == "outlet"]
+        outlets = sorted(outlets, key=lambda o: o.args["index"] if isinstance(o.args, dict) else o.args[0])
+        self.__outlet_connection_types: list[str] = [o.args["type"] for o in outlets if isinstance(o.args, dict)]
+
+        # resolve the arguments
+        for i, a in enumerate(self.hv_json.args):
+            if i < len(self.obj_args):
+                arg_value = self.obj_args[i]
+            elif a["required"]:
+                self.add_error(f"Required argument \"{a['name']}\" not found.")
+                continue
+            else:
+                arg_value = a["default"]
+
+            try:
+                arg_value = HeavyObject.force_arg_type(arg_value, a["value_type"])
+            except Exception as e:
+                self.add_error(
+                    f"Heavy {self.obj_type} cannot convert argument \"{a['name']}\""
+                    f" with value \"{arg_value}\" to type {a['value_type']}: {e}")
+
+            # resolve all arguments for each object in the graph
+            for o in self.hv_json.objects.values():
+                assert isinstance(o.args, dict)
+                for k, v in o.args.items():
+                    # TODO(mhroth): make resolution more robust
+                    if v == "$" + a["name"]:
+                        o.args[k] = arg_value
+
+        # reset all arguments, as they have all been resolved
+        # any required arguments would break hv2ir as they will no longer
+        # be supplied (because they are resolved)
+        self.hv_json.args = []
+
+    def get_outlet_connection_type(self, outlet_index: int) -> str:
+        return self.__outlet_connection_types[outlet_index]
+
+    def to_hv(self) -> Heavy:
+        return self.hv_json

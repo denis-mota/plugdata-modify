@@ -1,0 +1,185 @@
+/*
+ // Copyright (c) 2021-2022 Timothy Schoen
+ // For information on usage and redistribution, and for a DISCLAIMER OF ALL
+ // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
+ */
+
+#include "InternalSynth.h"
+#include <FluidLite/include/fluidlite.h>
+#include <FluidLite/src/fluid_sfont.h>
+
+// InternalSynth is an internal General MIDI synthesizer that can be used as a MIDI output device
+// The goal is to get something similar to the "AU DLS Synth" in Max/MSP on macOS, but cross-platform
+// Since fluidsynth is alraedy included for the sfont~ object, we can reuse it here to read a GM soundfont
+InternalSynth::InternalSynth()
+    : Thread("InternalSynthInit")
+{
+    if (!ProjectInfo::isStandalone)
+        return;
+
+    ignoreUnused(synth);
+    ignoreUnused(settings);
+}
+
+InternalSynth::~InternalSynth()
+{
+    if (!ProjectInfo::isStandalone)
+        return;
+
+    stopThread(6000);
+
+    if (ready) {
+        if (synth)
+            delete_fluid_synth(synth);
+        if (settings)
+            delete_fluid_settings(settings);
+    }
+}
+
+// Initialise fluidsynth on another thread, because it takes a while
+void InternalSynth::run()
+{
+    if (!ProjectInfo::isStandalone)
+        return;
+
+    unprepareLock.lock();
+
+    // Fluidlite does not like setups with <2 channels
+    internalBuffer.setSize(2, lastBlockSize);
+    internalBuffer.clear();
+
+    // Check if soundfont exists to prevent crashing
+    if (soundFont.existsAsFile()) {
+        auto const pathName = soundFont.getFullPathName();
+
+        // Initialise fluidsynth
+        settings = new_fluid_settings();
+        fluid_settings_setint(settings, "synth.ladspa.active", 0);
+        fluid_settings_setint(settings, "synth.midi-channels", 16);
+        fluid_settings_setnum(settings, "synth.gain", 0.9f);
+        fluid_settings_setnum(settings, "synth.audio-channels", 2);
+        fluid_settings_setnum(settings, "synth.sample-rate", lastSampleRate);
+        synth = new_fluid_synth(settings); // Create fluidsynth instance:
+
+        // Load the soundfont
+        int ret = fluid_synth_sfload(synth, pathName.toRawUTF8(), 0);
+
+        if (ret >= 0) {
+            fluid_synth_program_reset(synth);
+        }
+
+        ready = true;
+    }
+
+    unprepareLock.unlock();
+}
+
+void InternalSynth::unprepare()
+{
+    if (!ProjectInfo::isStandalone)
+        return;
+
+    unprepareLock.lock();
+
+    if (ready) {
+        if (synth)
+            delete_fluid_synth(synth);
+        if (settings)
+            delete_fluid_settings(settings);
+
+        lastSampleRate = 0;
+        lastBlockSize = 0;
+
+        ready = false;
+
+        synth = nullptr;
+        settings = nullptr;
+    }
+
+    unprepareLock.unlock();
+}
+
+void InternalSynth::handleAsyncUpdate()
+{
+    waitForThreadToExit(-1);
+    startThread();
+}
+
+void InternalSynth::prepare(int const sampleRate, int const blockSize)
+{
+    if (!ProjectInfo::isStandalone)
+        return;
+
+    if (sampleRate == lastSampleRate && blockSize == lastBlockSize) {
+        return;
+    } else {
+        lastSampleRate = sampleRate;
+        lastBlockSize = blockSize;
+        triggerAsyncUpdate();
+    }
+}
+
+void InternalSynth::process(AudioBuffer<float>& buffer, MidiBuffer const& midiMessages)
+{
+    if (!ProjectInfo::isStandalone)
+        return;
+
+    if (buffer.getNumSamples() > lastBlockSize) {
+        unprepare();
+        return;
+    }
+
+    unprepareLock.lock();
+
+    // Pass MIDI messages to fluidsynth
+    for (auto const& event : midiMessages) {
+        auto const message = event.getMessage();
+
+        auto const channel = message.getChannel() - 1;
+
+        if (message.isNoteOn()) {
+            fluid_synth_noteon(synth, channel, message.getNoteNumber(), message.getVelocity());
+        }
+        if (message.isNoteOff()) {
+            fluid_synth_noteoff(synth, channel, message.getNoteNumber());
+        }
+        if (message.isAftertouch()) {
+            fluid_synth_key_pressure(synth, channel, message.getNoteNumber(), message.getAfterTouchValue());
+        }
+        if (message.isChannelPressure()) {
+            fluid_synth_channel_pressure(synth, channel, message.getAfterTouchValue());
+        }
+        if (message.isController()) {
+            fluid_synth_cc(synth, channel, message.getControllerNumber(), message.getControllerValue());
+        }
+        if (message.isProgramChange()) {
+            fluid_synth_program_change(synth, channel, message.getProgramChangeNumber());
+        }
+        if (message.isPitchWheel()) {
+            fluid_synth_pitch_bend(synth, channel, message.getPitchWheelValue());
+        }
+        if (message.isSysEx()) {
+            fluid_synth_sysex(synth, reinterpret_cast<char const*>(message.getSysExData()), message.getSysExDataSize(), nullptr, nullptr, nullptr, 0);
+        }
+    }
+
+    internalBuffer.clear();
+
+    // Run audio through fluidsynth
+    fluid_synth_process(synth, internalBuffer.getNumSamples(), internalBuffer.getNumChannels(), const_cast<float**>(internalBuffer.getArrayOfReadPointers()), internalBuffer.getNumChannels(), const_cast<float**>(internalBuffer.getArrayOfWritePointers()));
+
+    int const numChannelsToProcess = std::min(buffer.getNumChannels(), 2);
+    for (int ch = 0; ch < numChannelsToProcess; ch++) {
+        buffer.addFrom(ch, 0, internalBuffer, ch, 0, buffer.getNumSamples());
+    }
+
+    unprepareLock.unlock();
+}
+
+bool InternalSynth::isReady()
+{
+    if (!ProjectInfo::isStandalone)
+        return false;
+
+    return ready;
+}

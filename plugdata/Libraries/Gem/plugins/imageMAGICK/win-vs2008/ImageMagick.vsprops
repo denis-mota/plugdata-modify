@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="ImageMagick"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(IMAGEMAGICK)&quot;;&quot;$(IMAGEMAGICK)\magick&quot;;&quot;$(IMAGEMAGICK)\Magick++\lib&quot;"
+		PreprocessorDefinitions="HAVE_LIBMAGICKPLUSPLUS;HAVE_LIBMAGICK"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalLibraryDirectories="$(IMAGEMAGICK)\VisualMagick\lib"
+	/>
+	<UserMacro
+		Name="IMAGEMAGICK"
+		Value="C:\dev\ImageMagick-6.8.6"
+	/>
+</VisualStudioPropertySheet>

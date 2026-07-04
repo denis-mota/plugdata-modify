@@ -1,0 +1,62 @@
+/*
+ // Copyright (c) 2021-2025 Timothy Schoen
+ // For information on usage and redistribution, and for a DISCLAIMER OF ALL
+ // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
+ */
+
+#pragma once
+#include <juce_animation/juce_animation.h>
+#include "Utility/SettingsFile.h"
+#include "NVGSurface.h"
+
+class Object;
+class Canvas;
+class ObjectGrid final : public SettingsFileListener {
+public:
+    int gridSize = 20;
+
+    explicit ObjectGrid(Canvas* cnv);
+
+    Point<int> performResize(Object* toDrag, Point<int> dragOffset, Rectangle<int> newResizeBounds);
+    Point<int> performMove(Object* toDrag, Point<int> dragOffset);
+
+    void positionNewObject(Object* newObject, Point<int> mousePosition);
+
+    void clearIndicators(bool fast);
+
+    void render(NVGcontext* nvg);
+
+private:
+    enum Side {
+        Left,
+        Right,
+        Top,
+        Bottom,
+        VerticalCentre,
+        HorizontalCentre,
+    };
+
+    void startLineFadeAnimation(int idx, float ms, float targetAlpha);
+
+    void settingsChanged(String const& name, var const& value) override;
+
+    static SmallArray<Object*> getSnappableObjects(Object const* draggedObject);
+
+    void setIndicator(int idx, Line<int> line);
+
+    static Line<int> getObjectIndicatorLine(Side side, Rectangle<int> b1, Rectangle<int> b2);
+
+    int objectTolerance = 6;
+    int connectionTolerance = 9;
+
+    Line<int> lines[2];
+    float lineAlpha[2] = { };
+    float lineTargetAlpha[2] = { };
+    Canvas* cnv;
+
+    int gridType;
+    bool gridEnabled;
+
+    VBlankAnimatorUpdater updater;
+    Animator lineAnimators[2] = { ValueAnimatorBuilder { }.build(), ValueAnimatorBuilder { }.build() };
+};

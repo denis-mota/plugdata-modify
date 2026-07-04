@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="ASSIMP2"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(ASSIMP2_DIR)\include&quot;"
+		PreprocessorDefinitions="HAVE_LIBASSIMP;HAVE_ASSIMP_H"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="assimp.lib"
+		AdditionalLibraryDirectories="&quot;$(ASSIMP2_DIR)\lib\assimp_release-dll_win32&quot;"
+	/>
+	<UserMacro
+		Name="ASSIMP2_DIR"
+		Value="C:\dev\assimp--2.0.863-sdk"
+	/>
+</VisualStudioPropertySheet>

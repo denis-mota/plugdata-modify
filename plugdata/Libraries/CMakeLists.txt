@@ -1,0 +1,696 @@
+cmake_minimum_required(VERSION 3.15)
+
+# ------------------------------------------------------------------------------#
+# LIBPD PROJECT IN C
+# ------------------------------------------------------------------------------#
+project(libpd VERSION 1.0.0 LANGUAGES C CXX)
+
+cmake_policy(SET CMP0091 NEW)
+cmake_policy(SET CMP0114 NEW)
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+set(MESSAGE_QUIET ON)
+_message(STATUS "Configuring fftw3")
+add_subdirectory(fftw3)
+
+_message(STATUS "Configuring libwebp")
+add_compile_definitions(OPUS_EXPORT= WEBP_EXTERN=)
+set(WEBP_BUILD_CWEBP OFF CACHE BOOL "")      # Disable cwebp (encoder tool)
+set(WEBP_BUILD_DWEBP OFF CACHE BOOL "")      # Disable dwebp (decoder tool)
+set(WEBP_BUILD_VWEBP OFF CACHE BOOL "")      # Disable vwebp (viewer)
+set(WEBP_BUILD_GIF2WEBP OFF CACHE BOOL "")   # Disable gif2webp
+set(WEBP_BUILD_IMG2WEBP OFF CACHE BOOL "")   # Disable img2webp
+set(WEBP_BUILD_WEBPINFO OFF CACHE BOOL "")   # Disable webpinfo
+set(WEBP_BUILD_WEBPMUX OFF CACHE BOOL "")    # Disable webpmux
+set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "")     # Disable all extra utilities
+set(WEBP_ENABLE_LIBWEBPMUX OFF CACHE BOOL "") # no metadata muxing
+set(WEBP_ENABLE_LIBWEBPDEMUX OFF CACHE BOOL "") # no metadata demuxing
+add_subdirectory(libwebp) # for reading webp files
+if(MSVC)
+    target_compile_options(webpdecoder PUBLIC "/MT$<$<STREQUAL:$<CONFIGURATION>,Debug>:d>")
+    set_target_properties(webpdecoder PROPERTIES CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$" )
+endif()
+_message(STATUS "Configuring liblzma")
+set(XZ_TOOL_XZDEC OFF CACHE BOOL "")
+set(XZ_TOOL_LZMADEC OFF CACHE BOOL "")
+set(XZ_TOOL_XZ OFF CACHE BOOL "")
+set(XZ_ENCODERS "" CACHE STRING "")
+add_subdirectory(xz) # for decompressing .tar.xz
+set(MESSAGE_QUIET OFF)
+
+if(MSVC)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+    option(BUILD_SHARED_LIBS "" FALSE)
+    add_subdirectory(pthread-win32)
+    include_directories(pthread-win32)
+    add_compile_options(/experimental:c11atomics)
+endif()
+
+if(BSD)
+    add_compile_definitions(ENABLE_OPUS=0)
+endif()
+
+add_subdirectory(JUCE)
+add_subdirectory(nanovg)
+
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.21")
+  set(MESSAGE_QUIET ON)
+  add_subdirectory(clap-juce-extensions EXCLUDE_FROM_ALL)
+  unset(MESSAGE_QUIET)
+endif()
+
+set(PD_DIR "pure-data/")
+
+# ------------------------------------------------------------------------------#
+set(CMAKE_MACOSX_RPATH ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+
+set(PD_PATH "pure-data/")
+set(LIBPD_PATH "libpd/")
+set(LIBPD_OUTPUT_DIRECTORY "./..")
+
+# ------------------------------------------------------------------------------#
+# OPTIONS
+# ------------------------------------------------------------------------------#
+option(PD_UTILS "Compile libpd utilities" OFF)
+option(PD_EXTRA "Compile extras" ON)
+option(PD_LOCALE "Set the LC_NUMERIC number format to the default C locale" ON)
+
+
+# ------------------------------------------------------------------------------#
+# SOURCES
+# ------------------------------------------------------------------------------#
+set(SOURCE_FILES)
+
+# PURE DATA SOURCES
+# ------------------------------------------------------------------------------#
+file(GLOB PD_SOURCES
+    ${PD_PATH}/src/d_arithmetic.c
+    ${PD_PATH}/src/d_array.c
+    ${PD_PATH}/src/d_ctl.c
+    ${PD_PATH}/src/d_dac.c
+    ${PD_PATH}/src/d_delay.c
+    ${PD_PATH}/src/d_fft.c
+    ${PD_PATH}/src/d_fft_fftw.c
+    ${PD_PATH}/src/d_filter.c
+    ${PD_PATH}/src/d_global.c
+    ${PD_PATH}/src/d_math.c
+    ${PD_PATH}/src/d_misc.c
+    ${PD_PATH}/src/d_osc.c
+    ${PD_PATH}/src/d_resample.c
+    ${PD_PATH}/src/d_soundfile_aiff.c
+    ${PD_PATH}/src/d_soundfile_caf.c
+    ${PD_PATH}/src/d_soundfile_next.c
+    ${PD_PATH}/src/d_soundfile_wave.c
+    ${PD_PATH}/src/d_soundfile.c
+    ${PD_PATH}/src/d_ugen.c
+    ${PD_PATH}/src/g_all_guis.c
+    ${PD_PATH}/src/g_all_guis.h
+    ${PD_PATH}/src/g_array.c
+    ${PD_PATH}/src/g_bang.c
+    ${PD_PATH}/src/g_canvas.c
+    ${PD_PATH}/src/g_canvas.h
+    ${PD_PATH}/src/g_clone.c
+    ${PD_PATH}/src/g_editor_extras.c
+    ${PD_PATH}/src/g_editor.c
+    ${PD_PATH}/src/g_graph.c
+    ${PD_PATH}/src/g_guiconnect.c
+    ${PD_PATH}/src/g_io.c
+    ${PD_PATH}/src/g_mycanvas.c
+    ${PD_PATH}/src/g_numbox.c
+    ${PD_PATH}/src/g_readwrite.c
+    ${PD_PATH}/src/g_rtext.c
+    ${PD_PATH}/src/g_radio.c
+    ${PD_PATH}/src/g_scalar.c
+    ${PD_PATH}/src/g_slider.c
+    ${PD_PATH}/src/g_template.c
+    ${PD_PATH}/src/g_text.c
+    ${PD_PATH}/src/g_toggle.c
+    ${PD_PATH}/src/g_traversal.c
+    ${PD_PATH}/src/g_undo.c
+    ${PD_PATH}/src/g_undo.h
+    ${PD_PATH}/src/g_vdial.c
+    ${PD_PATH}/src/g_vumeter.c
+    ${PD_PATH}/src/m_atom.c
+    ${PD_PATH}/src/m_binbuf.c
+    ${PD_PATH}/src/m_conf.c
+    ${PD_PATH}/src/m_class.c
+    ${PD_PATH}/src/m_glob.c
+    ${PD_PATH}/src/m_imp.h
+    ${PD_PATH}/src/m_memory.c
+    ${PD_PATH}/src/m_obj.c
+    ${PD_PATH}/src/m_pd.c
+    ${PD_PATH}/src/m_pd.h
+    ${PD_PATH}/src/m_sched.c
+    ${PD_PATH}/src/s_audio.c
+    ${PD_PATH}/src/s_audio_dummy.c
+    ${PD_PATH}/src/s_loader.c
+    ${PD_PATH}/src/s_main.c
+    ${PD_PATH}/src/s_net.c
+    ${PD_PATH}/src/s_net.h
+    ${PD_PATH}/src/s_path.c
+    ${PD_PATH}/src/s_print.c
+    ${PD_PATH}/src/s_stuff.h
+    ${PD_PATH}/src/s_utf8.c
+    ${PD_PATH}/src/s_utf8.h
+    ${PD_PATH}/src/s_inter_gui.c
+    ${PD_PATH}/src/s_inter.c
+    ${PD_PATH}/src/s_inter.h
+    ${PD_PATH}/src/x_acoustics.c
+    ${PD_PATH}/src/x_arithmetic.c
+    ${PD_PATH}/src/x_array.c
+    ${PD_PATH}/src/x_connective.c
+    ${PD_PATH}/src/x_file.c
+    ${PD_PATH}/src/x_gui.c
+    ${PD_PATH}/src/x_interface.c
+    ${PD_PATH}/src/x_list.c
+    ${PD_PATH}/src/x_midi.c
+    ${PD_PATH}/src/x_misc.c
+    ${PD_PATH}/src/x_net.c
+    ${PD_PATH}/src/x_scalar.c
+    ${PD_PATH}/src/x_text.c
+    ${PD_PATH}/src/x_time.c
+    ${PD_PATH}/src/x_vexp.c
+    ${PD_PATH}/src/x_vexp_fun.c
+    ${PD_PATH}/src/x_vexp_if.c
+    ${PD_PATH}/src/z_hooks.c
+    ${PD_PATH}/src/z_libpd.c
+    ${PD_PATH}/src/x_libpdreceive.c
+    ${PD_PATH}/src/z_print_util.c
+)
+include_directories(${PD_PATH}/src)
+source_group(pd FILES ${PD_SOURCES})
+list(APPEND SOURCE_FILES ${PD_SOURCES})
+
+# PURE DATA EXTRA SOURCES
+# ------------------------------------------------------------------------------#
+if(PD_EXTRA)
+    file(GLOB PD_EXTRA_SOURCES
+        ${PD_PATH}/extra/bob~/bob~.c
+        ${PD_PATH}/extra/bonk~/bonk~.c
+        ${PD_PATH}/extra/choice/choice.c
+        ${PD_PATH}/extra/fiddle~/fiddle~.c
+        ${PD_PATH}/extra/loop~/loop~.c
+        ${PD_PATH}/extra/lrshift~/lrshift~.c
+        ${PD_PATH}/extra/pd~/pd~.c
+        ${PD_PATH}/extra/pd~/pdsched.c
+        ${PD_PATH}/extra/pique/pique.c
+        ${PD_PATH}/extra/sigmund~/sigmund~.c
+        ${PD_PATH}/extra/stdout/stdout.c
+    )
+    include_directories(${PD_PATH}/pure-data/extra)
+    source_group(pd\\extra FILES ${PD_EXTRA_SOURCES})
+    list(APPEND SOURCE_FILES ${PD_EXTRA_SOURCES})
+endif()
+
+# ELSE SOURCES
+# ------------------------------------------------------------------------------#
+file(GLOB_RECURSE PLAITS_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/plaits~/plaits~.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/plaits~/*.cc
+)
+
+file(GLOB ELSE_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Control/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/sfont~/sfont~.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/circuit~/Source/circuit~.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/circuit~/Source/Simulator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/circuit~/Libraries/**/*.c
+    ${PLAITS_SOURCES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/libsamplerate/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/link/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/link/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/link/udp/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/link/udp/*.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/aubio/src/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/aubio/src/*/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/fftease/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/fftease/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Extra/Aliases/*.c
+)
+
+if(NOT ENABLE_FFMPEG)
+list(REMOVE_ITEM ELSE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/play.file~.c)
+list(REMOVE_ITEM ELSE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/streamin~.c)
+list(REMOVE_ITEM ELSE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/streamout~.c)
+list(REMOVE_ITEM ELSE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Control/sfload.c)
+list(REMOVE_ITEM ELSE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Control/sfinfo.c)
+endif()
+
+
+if(ENABLE_SFIZZ)
+list(APPEND ELSE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/sfz~/sfz~.c)
+endif()
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+source_group(ELSE FILES ${ELSE_SOURCES})
+
+file(GLOB_RECURSE CYCLONE_SOURCES
+    ./pd-cyclone/cyclone_objects/binaries/cyclone_lib.c
+    ./pd-cyclone/cyclone_objects/binaries/audio/*.c
+    ./pd-cyclone/cyclone_objects/binaries/control/*.c
+    ./pd-cyclone/shared/common/*.c
+    ./pd-cyclone/shared/control/*.c
+    ./pd-cyclone/shared/signal/*.c
+)
+
+include_directories(pd-cyclone/)
+include_directories(pd-cyclone/shared/)
+source_group(pd-cyclone FILES ${CYCLONE_SOURCES})
+
+# PDNAM SOURCES
+# ------------------------------------------------------------------------------#
+# pdnam~ (lightweight, header-only MicroNAM)
+set(PDNAM_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/pdnam~.cpp
+)
+
+# pdnam+~ (heavyweight, NeuralAudio + RTNeural)
+set(PDNAM_PLUS_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/pdnam+~.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/NeuralAudio/NeuralModel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/NeuralAudio/RTNeuralLoader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/RTNeural/RTNeural/RTNeural.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/NeuralAmpModelerCore/NAM/activations.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/NeuralAmpModelerCore/NAM/lstm.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/NeuralAmpModelerCore/NAM/dsp.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/NeuralAmpModelerCore/NAM/wavenet.cpp
+)
+
+set(PDNAM_SOURCES_ALL ${PDNAM_SOURCES} ${PDNAM_PLUS_SOURCES})
+source_group(pd-pdnam FILES ${PDNAM_SOURCES_ALL})
+
+set(PDNAM_INCLUDES
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/MicroNAM
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/json/single_include
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/NeuralAudio
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/RTNeural
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/math_approx/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/NeuralAmpModelerCore
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/RTNeural/modules/Eigen
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/RTNeural/modules/json
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/RTNeural-NAM
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/RTNeural-NAM/wavenet
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-pdnam/dep/NeuralAudio/deps/RTNeural/modules/xsimd/include
+)
+
+set(PDNAM_COMPILE_DEFINITIONS
+    NAM_SAMPLE_FLOAT
+    DSP_SAMPLE_FLOAT
+    BUILD_INTERNAL_STATIC_WAVENET
+    BUILD_INTERNAL_STATIC_LSTM
+    LSTM_MATH=FastMath
+    WAVENET_MATH=FastMath
+    WAVENET_MAX_NUM_FRAMES=64
+    LAYER_ARRAY_BUFFER_PADDING=24
+    RTNEURAL_NAMESPACE=RTNeural
+    RTNEURAL_USE_EIGEN=1
+    RTNEURAL_DEFAULT_ALIGNMENT=16
+)
+
+include(ExternalProject)
+find_program(MAKE_EXECUTABLE NAMES gmake make REQUIRED)
+if(WIN32)
+    set(LUAJIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pd-lua/luas/luajit/src)
+    set(LUAJIT_BUILD_COMMAND cmd /c "set LJCOMPILE=cl /nologo /c /O2 /W3 /D_CRT_SECURE_NO_DEPRECATE /D_CRT_STDIO_INLINE=__declspec(dllexport)__inline /MT && msvcbuild.bat static")
+    set(LUAJIT_LIBS
+        ${CMAKE_CURRENT_SOURCE_DIR}/pd-lua/luas/luajit/src/lua51.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/pd-lua/luas/luajit/src/luajit.lib
+    )
+elseif(APPLE)
+    set(LUAJIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pd-lua/luas/luajit/)
+    if("${CMAKE_SYSTEM_NAME}" MATCHES "iOS")
+        set(LUAJIT_BUILD_COMMAND sh -c
+            [=[
+            cd src &&
+            make clean TARGET_SYS=iOS &&
+            ISDKP=$(xcrun --sdk iphoneos --show-sdk-path)
+            ICC=$(xcrun --sdk iphoneos --find clang)
+            ISDKF="-arch arm64 -isysroot $ISDKP"
+            # Workaround: xcode's env variables makes it compile build tools for iOS, so we need to clear the environment and pass CC manually
+            env -i PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin" \
+                HOME="$HOME" \
+                USER="$USER" \
+                DEVELOPER_DIR="$(xcode-select -p)" \
+            make CC="clang" \
+                TARGET_SYS=iOS \
+                TARGET_FLAGS="$ISDKF" \
+                CROSS="$(dirname $ICC)/"
+            ]=]
+        )
+    else()
+        set(LUAJIT_BUILD_COMMAND
+            sh -c
+            [=[
+                cd src &&
+                make clean MACOSX_DEPLOYMENT_TARGET=10.15 &&
+                make MACOSX_DEPLOYMENT_TARGET=10.15 BUILDMODE=static \
+                    CFLAGS="-arch x86_64" LDFLAGS="-arch x86_64" TARGET_FLAGS="-arch x86_64" &&
+                cp libluajit.a libluajit-x86_64.a &&
+                make clean MACOSX_DEPLOYMENT_TARGET=11.0 &&
+                make MACOSX_DEPLOYMENT_TARGET=11.0 BUILDMODE=static \
+                    CFLAGS="-arch arm64" LDFLAGS="-arch arm64" TARGET_FLAGS="-arch arm64" &&
+                cp libluajit.a libluajit-arm64.a &&
+                lipo -create libluajit-x86_64.a libluajit-arm64.a -output libluajit.a
+            ]=]
+        )
+    endif()
+    set(LUAJIT_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/pd-lua/luas/luajit/src/libluajit.a)
+else()
+    set(LUAJIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pd-lua/luas/luajit/)
+    set(LUAJIT_BUILD_COMMAND ${MAKE_EXECUTABLE} -C src CFLAGS=-fPIC BUILDMODE=static)
+    set(LUAJIT_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/pd-lua/luas/luajit/src/libluajit.a)
+endif()
+
+ExternalProject_Add(luajit_build
+    SOURCE_DIR      ${LUAJIT_SOURCE_DIR}
+    BUILD_IN_SOURCE TRUE
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND   ${LUAJIT_BUILD_COMMAND}
+    INSTALL_COMMAND ""
+    BUILD_BYPRODUCTS ${LUAJIT_LIBS}
+)
+
+# ------------------------------------------------------------------------------#
+# COMPILE DEFINITIONS
+# ------------------------------------------------------------------------------#
+set(LIBPD_COMPILE_DEFINITIONS PD=1 USEAPI_DUMMY=1 PD_INTERNAL=1)
+
+
+if(ENABLE_FFMPEG)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/ffmpeg)
+set(FFMPEG_PATH ${CMAKE_CURRENT_BINARY_DIR}/pd-else/Source/Shared/ffmpeg/ffmpeg-7.0.1)
+endif()
+
+if(ENABLE_GEM)
+find_package(OpenGL REQUIRED)
+add_subdirectory(Gem)
+set(GEM_LIBS Gem Gem-plugins ftgl freetype assimp OpenGL::GLU)
+set(GEM_LIBS_MULTI Gem-multi Gem-plugins ftgl freetype assimp OpenGL::GLU)
+target_include_directories(Gem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Gem/plugins/ASSIMP3/assimp/include)
+target_include_directories(Gem-multi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Gem/plugins/ASSIMP3/assimp/include)
+endif()
+
+
+if(ENABLE_SFIZZ)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/sfz~)
+endif()
+
+# COMPILE DEFINITIONS OPTIONS
+# ------------------------------------------------------------------------------#
+if(PD_EXTRA)
+    list(APPEND LIBPD_COMPILE_DEFINITIONS LIBPD_EXTRA=1)
+endif()
+
+# COMPILE DEFINITIONS OS
+# ------------------------------------------------------------------------------#
+if(WIN32)
+    list(APPEND LIBPD_COMPILE_DEFINITIONS WINVER=0x502 WIN32=1 _WIN32=1)
+
+    if(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+        list(APPEND LIBPD_COMPILE_DEFINITIONS "PD_LONGINTTYPE=long long")
+    endif()
+
+    if(MSVC)
+        list(APPEND LIBPD_COMPILE_DEFINITIONS HAVE_STRUCT_TIMESPEC=1 _CRT_SECURE_NO_WARNINGS=1 HAVE_ALLOCA=1 DONT_USE_ALLOCA=0)
+    endif()
+elseif(UNIX)
+    if(LINUX OR APPLE)
+        list(APPEND LIBPD_COMPILE_DEFINITIONS HAVE_LIBDL=1 HAVE_UNISTD_H=1 HAVE_ALLOCA_H=1 HAVE_ALLOCA=1 DONT_USE_ALLOCA=0)
+    else() # BSD
+        list(APPEND LIBPD_COMPILE_DEFINITIONS HAVE_LIBDL=1 HAVE_UNISTD_H=1 HAVE_ALLOCA=1 DONT_USE_ALLOCA=0 HAVE_ENDIAN_H=0)
+    endif()
+endif()
+
+# ------------------------------------------------------------------------------#
+# C FLAGS
+# ------------------------------------------------------------------------------#
+
+# C FLAGS COMPILER OR GENERATOR
+# ------------------------------------------------------------------------------#
+if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+    # These are the warning flags I need to get pd to compile withoout warnings
+    # Would be nice if these warnings were solved instead
+    add_compile_options(-Wno-format -Wno-format-security -Wno-conversion -Wno-unused-variable -Wno-int-to-pointer-cast -Wno-parentheses -Wno-unused-value -Wno-unknown-pragmas)
+
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+        add_compile_options(-Wno-compare-distinct-pointer-types -Wno-implicit-int-conversion)
+    endif()
+
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-int-conversion -Wno-pointer-sign -Wno-pointer-to-int-cast -Wno-incompatible-pointer-types")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -ffast-math -fno-finite-math-only -funroll-loops -fomit-frame-pointer -O3")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -O0")
+elseif(MSVC)
+  add_compile_options(/wd4244 /wd4311 /wd4003 /wd4047 /wd4477 /wd4068 /wd4133 /wd4311)
+endif()
+
+# ------------------------------------------------------------------------------#
+# SFONT~
+# ------------------------------------------------------------------------------#
+
+set(FLUIDLITE_DIR pd-else/Source/Audio/sfont~/FluidLite)
+list(APPEND SFONT_SOURCES
+    ${FLUIDLITE_DIR}/src/fluid_init.c
+    ${FLUIDLITE_DIR}/src/fluid_chan.c
+    ${FLUIDLITE_DIR}/src/fluid_chorus.c
+    ${FLUIDLITE_DIR}/src/fluid_conv.c
+    ${FLUIDLITE_DIR}/src/fluid_defsfont.c
+    ${FLUIDLITE_DIR}/src/fluid_dsp_float.c
+    ${FLUIDLITE_DIR}/src/fluid_gen.c
+    ${FLUIDLITE_DIR}/src/fluid_hash.c
+    ${FLUIDLITE_DIR}/src/fluid_list.c
+    ${FLUIDLITE_DIR}/src/fluid_mod.c
+    ${FLUIDLITE_DIR}/src/fluid_ramsfont.c
+    ${FLUIDLITE_DIR}/src/fluid_rev.c
+    ${FLUIDLITE_DIR}/src/fluid_settings.c
+    ${FLUIDLITE_DIR}/src/fluid_synth.c
+    ${FLUIDLITE_DIR}/src/fluid_sys.c
+    ${FLUIDLITE_DIR}/src/fluid_tuning.c
+    ${FLUIDLITE_DIR}/src/fluid_voice.c
+)
+
+if(MSVC)
+
+list(APPEND SFONT_SOURCES
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/vorbisenc.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/info.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/analysis.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/bitrate.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/block.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/codebook.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/envelope.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/floor0.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/floor1.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/lookup.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/lpc.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/lsp.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/mapping0.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/mdct.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/psy.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/registry.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/res0.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/sharedbook.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/smallft.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/vorbisfile.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/window.c
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib/synthesis.c
+
+    ${FLUIDLITE_DIR}/libogg-1.3.2/src/bitwise.c
+    ${FLUIDLITE_DIR}/libogg-1.3.2/src/framing.c
+)
+endif()
+
+list(APPEND SFONT_INCLUDES
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/include
+    ${FLUIDLITE_DIR}/libvorbis-1.3.5/lib
+    ${FLUIDLITE_DIR}/libogg-1.3.2/include
+    ${FLUIDLITE_DIR}/include
+)
+
+add_library(fluidlite STATIC ${SFONT_SOURCES})
+target_include_directories(fluidlite PRIVATE ${SFONT_INCLUDES})
+target_include_directories(fluidlite PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Audio/sfont~)
+
+if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+target_compile_options(fluidlite PRIVATE -Wno-compound-token-split-by-macro)
+endif()
+
+set(MESSAGE_QUIET ON)
+set(OPUS_STATIC_RUNTIME ON)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pd-else/Source/Shared/opus)
+target_compile_definitions(opus PRIVATE FLOAT_APPROX=1)
+unset(MESSAGE_QUIET)
+
+# pdlua sources
+set(PDLUA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/pd-lua")
+set(LUA_INCLUDE_DIR "${PDLUA_PATH}/luas/luajit/src")
+set(PDLUA_SOURCES "${PDLUA_PATH}/luas/lua.c" "${PDLUA_PATH}/luas/luajit.c")
+
+# ------------------------------------------------------------------------------#
+# TARGETS
+# ------------------------------------------------------------------------------#
+add_library(externals STATIC ${ELSE_SOURCES} ${CYCLONE_SOURCES} ${PDLUA_SOURCES} ${PDNAM_SOURCES_ALL})
+add_library(externals-multi STATIC ${ELSE_SOURCES} ${CYCLONE_SOURCES} ${PDLUA_SOURCES} ${PDNAM_SOURCES_ALL})
+
+add_library(luajit STATIC IMPORTED GLOBAL)
+list(GET LUAJIT_LIBS 0 LUAJIT_MAIN_LIB)
+set_target_properties(luajit PROPERTIES IMPORTED_LOCATION ${LUAJIT_MAIN_LIB})
+add_dependencies(luajit luajit_build)
+target_link_libraries(luajit INTERFACE ${LUAJIT_LIBS})
+target_include_directories(luajit INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/pd-lua/luas/luajit/src
+)
+set(LUA_COMPILE_DEFINITIONS MAKE_LIB=1)
+
+if("${CMAKE_SYSTEM}" MATCHES "Linux")
+list(APPEND LUA_COMPILE_DEFINITIONS LUA_USE_LINUX=1)
+elseif(MSVC)
+list(APPEND LUA_COMPILE_DEFINITIONS LUA_USE_WINDOWS=1)
+elseif(APPLE)
+    if("${CMAKE_SYSTEM_NAME}" MATCHES "iOS")
+        list(APPEND LUA_COMPILE_DEFINITIONS LUA_USE_IOS=1)
+    else()
+        list(APPEND LUA_COMPILE_DEFINITIONS LUA_USE_MACOSX=1)
+    endif()
+endif()
+
+# live version data for pdlua.c
+# set(PDLUA_VERSION 0.11.0)
+#execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR}/pd-lua describe --tags OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PDLUA_VERSION)
+#set_source_files_properties(${PDLUA_PATH}/pdlua.c PROPERTIES COMPILE_DEFINITIONS PDLUA_VERSION=${PDLUA_VERSION})
+
+# Hide deprecation warnings on externals, it's noise and are outside of our control
+if(MSVC)
+  target_compile_options(externals PRIVATE /wd4996)
+  target_compile_options(externals-multi PRIVATE /wd4996)
+else()
+  target_compile_options(externals PRIVATE -Wno-deprecated-declarations)
+  target_compile_options(externals-multi PRIVATE -Wno-deprecated-declarations)
+endif()
+
+list(APPEND ELSE_INCLUDES
+    pd-else/Source/Control/
+    pd-else/Source/Audio/
+    pd-else/Source/Shared/
+    pd-else/Source/Shared/libsamplerate
+    pd-else/Source/Shared/aubio/src
+    pd-else/Source/Audio/plaits~
+    pd-else/Source/Audio/circuit~/Libraries
+    pd-else/Source/Audio/sfz~/sfizz/library/src
+    pd-else/Source/Shared/opus/include
+    pd-else/Source/Shared/link
+    ${CMAKE_CURRENT_BINARY_DIR}/pd-else/Source/Shared/ffmpeg/ffmpeg-7.0.1
+)
+
+target_include_directories(externals PRIVATE ${ELSE_INCLUDES})
+target_include_directories(externals-multi PRIVATE ${ELSE_INCLUDES})
+
+# PDNAM includes and compile definitions
+target_include_directories(externals PRIVATE ${PDNAM_INCLUDES})
+target_include_directories(externals-multi PRIVATE ${PDNAM_INCLUDES})
+target_compile_definitions(externals PRIVATE ${PDNAM_COMPILE_DEFINITIONS})
+target_compile_definitions(externals-multi PRIVATE ${PDNAM_COMPILE_DEFINITIONS})
+
+# ag: pdlua needs PLUGDATA symbol at compile time for plugdata integration.
+target_compile_definitions(externals PRIVATE ${LIBPD_COMPILE_DEFINITIONS} ${LUA_COMPILE_DEFINITIONS} PLUGDATA=1)
+target_compile_definitions(externals-multi PRIVATE ${LIBPD_COMPILE_DEFINITIONS} ${LUA_COMPILE_DEFINITIONS} PDINSTANCE=1 PDTHREADS=1 PLUGDATA=1)
+
+# PDNAM requires C++20 for NeuralAudio/RTNeural
+target_compile_features(externals PRIVATE cxx_std_20)
+target_compile_features(externals-multi PRIVATE cxx_std_20)
+
+add_library(pd-src STATIC ${SOURCE_FILES})
+target_compile_definitions(pd-src PRIVATE ${LIBPD_COMPILE_DEFINITIONS})
+
+if(UNIX)
+    target_compile_options(pd-src PRIVATE -fvisibility=default)
+    target_compile_options(externals PRIVATE -fvisibility=default)
+endif()
+
+add_library(pd-src-multi STATIC ${SOURCE_FILES})
+target_compile_definitions(pd-src-multi PRIVATE ${LIBPD_COMPILE_DEFINITIONS} PDINSTANCE=1 PDTHREADS=1)
+
+if(MSVC)
+    target_compile_definitions(pd-src-multi PRIVATE PTW32_STATIC_LIB=1 "EXTERN= ")
+endif()
+
+set_target_properties(externals-multi PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(pd-src-multi PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(externals-multi PROPERTIES CXX_VISIBILITY_PRESET hidden)
+set_target_properties(pd-src-multi PROPERTIES CXX_VISIBILITY_PRESET hidden)
+
+set_target_properties(pd-src PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(pd-src-multi PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+set_target_properties(externals PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(externals-multi PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+target_include_directories(externals PRIVATE ${LUA_INCLUDE_DIR} ${SFONT_INCLUDES})
+target_include_directories(externals-multi PRIVATE ${LUA_INCLUDE_DIR} ${SFONT_INCLUDES})
+
+
+# ------------------------------------------------------------------------------#
+# LINK
+# ------------------------------------------------------------------------------#
+
+set(externals_libs fluidlite opus)
+if(ENABLE_SFIZZ)
+list(APPEND externals_libs sfizz)
+add_dependencies(externals sfizz_deps)
+add_dependencies(externals-multi sfizz_deps)
+endif()
+
+if(ENABLE_FFMPEG)
+list(APPEND externals_libs ffmpeg)
+add_dependencies(externals ffmpeg_deps)
+add_dependencies(externals-multi ffmpeg_deps)
+if(ENABLE_GEM)
+    target_link_libraries(Gem-plugins PUBLIC ffmpeg)
+    add_dependencies(Gem-plugins ffmpeg_deps)
+endif()
+endif()
+
+if("${CMAKE_SYSTEM}" MATCHES "Linux")
+    add_library(pd INTERFACE)
+    add_library(pd-multi INTERFACE)
+    find_library(MATH_LIB m)
+    target_link_libraries(externals PUBLIC ${externals_libs} ${GEM_LIBS})
+    target_link_libraries(externals-multi PUBLIC ${externals_libs} ${GEM_LIBS_MULTI})
+elseif(MSVC)
+    add_library(pd SHARED $<TARGET_OBJECTS:externals> $<TARGET_OBJECTS:pd-src>)
+    add_library(pd-multi STATIC $<TARGET_OBJECTS:externals-multi> $<TARGET_OBJECTS:pd-src-multi>)
+
+    target_link_libraries(pd PUBLIC pthreadVC3 ws2_32 ${externals_libs} ${GEM_LIBS} luajit)
+    target_link_libraries(pd-multi PUBLIC pthreadVC3 ws2_32 ${externals_libs} ${GEM_LIBS_MULTI} luajit)
+
+    add_custom_command(TARGET pd POST_BUILD
+       COMMAND ${CMAKE_COMMAND} -E copy_if_different
+       "$<TARGET_FILE:pd>"
+       ${CMAKE_SOURCE_DIR}/Plugins/Standalone/pd.dll
+    )
+elseif(APPLE)
+    target_link_libraries(externals PUBLIC ${externals_libs} ${GEM_LIBS})
+    target_link_libraries(externals-multi PUBLIC ${externals_libs} ${GEM_LIBS_MULTI})
+endif()
+
+if(MSVC)
+target_link_libraries(pd PRIVATE fftw3f)
+target_link_libraries(pd-multi PRIVATE fftw3f)
+else()
+target_link_libraries(pd-src PRIVATE fftw3f)
+target_link_libraries(pd-src-multi PRIVATE fftw3f)
+endif()
+target_include_directories(pd-src PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/fftw3/api)
+target_include_directories(pd-src-multi PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/fftw3/api)
+
+# PTHREAD
+# ------------------------------------------------------------------------------#
+set(THREADS_PREFER_PTHREAD_FLAG On)
+set(CMAKE_THREAD_PREFER_PTHREAD True)

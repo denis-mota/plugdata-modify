@@ -1,0 +1,42 @@
+/*
+ * Copyright (C) 2026 Wasted Audio
+ * SPDX-License-Identifier: ISC
+*/
+
+#pragma once
+
+#include "NanoVG.hpp"
+#include "nanovg.h"
+
+#include "ExtraEventHandlers.hpp"
+#include "Label.hpp"
+#include "PDWidget.hpp"
+
+START_NAMESPACE_DISTRHO
+
+class PDSlider : public PDWidget,
+               public PDSliderEventHandler
+{
+public:
+    explicit PDSlider(NanoSubWidget *parent, PDSliderEventHandler::Callback* cb);
+
+    void setHorizontal();
+    void setColors(NVGcolor bgColor, NVGcolor sliderColor);
+    void setLabel(std::string text, NVGcolor textColor, int x, int y, int size);
+
+protected:
+    bool onMouse(const MouseEvent &ev) override;
+    bool onMotion(const MotionEvent &ev) override;
+
+    void onNanoDisplay() override;
+
+private:
+    bool isHorizontal = false;
+    NVGcolor bgColor;
+    NVGcolor sliderColor;
+    ScopedPointer<PDLabel> label;
+
+    DISTRHO_LEAK_DETECTOR(PDSlider)
+};
+
+END_NAMESPACE_DISTRHO

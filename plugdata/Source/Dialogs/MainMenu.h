@@ -1,0 +1,312 @@
+/*
+ // Copyright (c) 2021-2025 Timothy Schoen
+ // For information on usage and redistribution, and for a DISCLAIMER OF ALL
+ // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
+ */
+#pragma once
+
+#include "PluginEditor.h"
+#include "Utility/Autosave.h"
+#include "Components/WelcomePanel.h"
+
+class MainMenu : public PopupMenu {
+
+public:
+    explicit MainMenu(PluginEditor* editor)
+    {
+        addCustomItem(1, themeSelector, 70, 45, false);
+        addSeparator();
+
+        addCustomItem(getMenuItemID(MenuItem::NewPatch), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::NewPatch)]), nullptr, "New patch");
+
+        addCustomItem(getMenuItemID(MenuItem::OpenPatch), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::OpenPatch)]), nullptr, "Open patch");
+
+        auto const recentlyOpened = new PopupMenu();
+
+        auto& recentlyOpenedList = SettingsFile::getInstance()->getProperty<VarArray>("recently_opened");
+        for (int i = 0; i < recentlyOpenedList.size(); i++) {
+            auto path = File(recentlyOpenedList[i].getProperty("path", "").toString());
+            recentlyOpened->addItem(path.getFileName(), [path, editor]() mutable {
+                if (path.existsAsFile()) {
+                    editor->getTabComponent().openPatch(URL(path));
+                } else {
+                    editor->pd->logError("Patch not found");
+                }
+            });
+        }
+
+        if ((menuItems[2]->isActive = recentlyOpenedList.size() > 0)) {
+            recentlyOpened->addSeparator();
+            recentlyOpened->addItem("Clear recently opened", [recentlyOpenedList, editor]() mutable {
+                recentlyOpenedList.clear();
+                // Make sure to clear the recent items in the current welcome panel
+                if (editor->welcomePanel)
+                    editor->welcomePanel->triggerAsyncUpdate();
+                SettingsFile::getInstance()->reloadSettings();
+            });
+        }
+
+        addCustomItem(getMenuItemID(MenuItem::History), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::History)]), std::unique_ptr<PopupMenu const>(recentlyOpened), "Recently opened");
+
+        addSeparator();
+        addCustomItem(getMenuItemID(MenuItem::Save), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::Save)]), nullptr, "Save patch");
+        addCustomItem(getMenuItemID(MenuItem::SaveAs), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::SaveAs)]), nullptr, "Save patch as");
+
+        auto const plugdataState = new PopupMenu();
+        plugdataState->addItem("Import workspace", [editor]() mutable {
+            static auto openChooser = std::make_unique<FileChooser>("Choose file to open", SettingsFile::getInstance()->getLastBrowserPathForId("WorkspacePath"), "*.pdproj", SettingsFile::getInstance()->wantsNativeDialog());
+
+            openChooser->launchAsync(FileBrowserComponent::openMode | FileBrowserComponent::canSelectFiles, [editor](FileChooser const& f) {
+                auto file = f.getResult();
+                if (file != File { }) {
+                    MemoryBlock block;
+                    file.loadFileAsData(block);
+                    editor->processor.setStateInformation(block.getData(), block.getSize());
+                    SettingsFile::getInstance()->setLastBrowserPathForId("WorkspacePath", file.getParentDirectory());
+                }
+            });
+        });
+
+        plugdataState->addItem("Export workspace", [editor]() mutable {
+            static auto saveChooser = std::make_unique<FileChooser>("Choose save location", SettingsFile::getInstance()->getLastBrowserPathForId("WorkspacePath"), "*.pdproj", SettingsFile::getInstance()->wantsNativeDialog());
+
+            saveChooser->launchAsync(FileBrowserComponent::saveMode | FileBrowserComponent::canSelectFiles, [editor](FileChooser const& f) {
+                auto const file = f.getResult().withFileExtension(".pdproj");
+                if (file != File { } && file.getParentDirectory().exists()) {
+                    MemoryBlock destData;
+                    editor->processor.getStateInformation(destData);
+                    file.replaceWithData(destData.getData(), destData.getSize());
+                    SettingsFile::getInstance()->setLastBrowserPathForId("WorkspacePath", file.getParentDirectory());
+                }
+            });
+        });
+
+        addCustomItem(getMenuItemID(MenuItem::State), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::State)]), std::unique_ptr<PopupMenu const>(plugdataState), "Workspace");
+
+        addSeparator();
+
+        addCustomItem(getMenuItemID(MenuItem::CompiledMode), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::CompiledMode)]), nullptr, "Compiled mode");
+        addCustomItem(getMenuItemID(MenuItem::Compile), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::Compile)]), nullptr, "Compile...");
+
+        addSeparator();
+
+        addCustomItem(getMenuItemID(MenuItem::FindExternals), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::FindExternals)]), nullptr, "Find externals...");
+
+        addCustomItem(getMenuItemID(MenuItem::Discover), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::Discover)]), nullptr, "Discover...");
+
+        addCustomItem(getMenuItemID(MenuItem::Settings), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::Settings)]), nullptr, "Settings...");
+        addCustomItem(getMenuItemID(MenuItem::About), std::unique_ptr<IconMenuItem>(menuItems[getMenuItemIndex(MenuItem::About)]), nullptr, "About...");
+
+        // Toggles hvcc compatibility mode
+        bool const hvccModeEnabled = SettingsFile::getInstance()->getProperty<bool>("hvcc_mode");
+        bool const hasCanvas = editor->getCurrentCanvas() != nullptr;
+
+        menuItems[getMenuItemIndex(MenuItem::Save)]->isActive = hasCanvas;
+        menuItems[getMenuItemIndex(MenuItem::SaveAs)]->isActive = hasCanvas;
+
+        menuItems[getMenuItemIndex(MenuItem::CompiledMode)]->isTicked = hvccModeEnabled;
+    }
+
+    class IconMenuItem final : public PopupMenu::CustomComponent {
+
+        String menuItemIcon;
+        String menuItemText;
+
+        bool hasSubMenu;
+        bool hasTickBox;
+
+    public:
+        bool isTicked = false;
+        bool isActive = true;
+
+        IconMenuItem(String icon, String text, bool const hasChildren, bool const tickBox)
+            : menuItemIcon(std::move(icon))
+            , menuItemText(std::move(text))
+            , hasSubMenu(hasChildren)
+            , hasTickBox(tickBox)
+        {
+        }
+
+        void getIdealSize(int& idealWidth, int& idealHeight) override
+        {
+            idealWidth = 70;
+            idealHeight = 24;
+        }
+
+        void paint(Graphics& g) override
+        {
+            auto r = getLocalBounds();
+
+            auto const colour = findColour(PopupMenu::textColourId).withMultipliedAlpha(isActive ? 1.0f : 0.5f);
+            if (isItemHighlighted() && isActive) {
+                g.setColour(PlugDataColours::popupMenuActiveBackgroundColour);
+
+                g.fillRoundedRectangle(r.toFloat().reduced(0, 1), Corners::defaultCornerRadius);
+            }
+
+            g.setColour(colour);
+
+            r.reduce(jmin(5, r.getWidth() / 20), 0);
+
+            auto const maxFontHeight = static_cast<float>(r.getHeight()) / 1.3f;
+
+            auto const iconArea = r.removeFromLeft(roundToInt(maxFontHeight)).withSizeKeepingCentre(maxFontHeight, maxFontHeight);
+
+            if (menuItemIcon.isNotEmpty()) {
+                Fonts::drawIcon(g, menuItemIcon, iconArea.translated(3.0f, 0.0f), colour, std::min(15.0f, maxFontHeight), true);
+            } else if (hasTickBox) {
+
+                g.setColour(colour);
+                g.drawRoundedRectangle(iconArea.toFloat().translated(3.0f, 0.5f).reduced(1.0f), 4.0f, 1.0f);
+
+                if (isTicked) {
+                    g.setColour(colour);
+                    auto const tick = getLookAndFeel().getTickShape(1.0f);
+                    g.fillPath(tick, tick.getTransformToScaleToFit(iconArea.toFloat().translated(3.5f, 0.5f).reduced(2.5f, 3.5f), false));
+                }
+            }
+
+            r.removeFromLeft(roundToInt(maxFontHeight * 0.5f));
+
+            int const fontHeight = std::min(17.0f, maxFontHeight);
+            if (hasSubMenu) {
+                auto const arrowH = 0.6f * Font(FontOptions(fontHeight)).getAscent();
+
+                auto const x = static_cast<float>(r.removeFromRight(static_cast<int>(arrowH) + 2).getX());
+                auto const halfH = static_cast<float>(r.getCentreY());
+
+                Path path;
+                path.startNewSubPath(x, halfH - arrowH * 0.5f);
+                path.lineTo(x + arrowH * 0.5f, halfH);
+                path.lineTo(x, halfH + arrowH * 0.5f);
+
+                g.strokePath(path, PathStrokeType(1.5f));
+            }
+
+            r.removeFromRight(3);
+            Fonts::drawFittedText(g, menuItemText, r, colour, fontHeight);
+        }
+    };
+
+    class ThemeSelector final : public Component
+        , public AsyncUpdater {
+
+        Value theme;
+
+    public:
+        explicit ThemeSelector()
+        {
+            theme.referTo(SettingsFile::getInstance()->getPropertyAsValue("theme"));
+        }
+
+        void paint(Graphics& g) override
+        {
+            auto secondBounds = getLocalBounds();
+            auto firstBounds = secondBounds.removeFromLeft(getWidth() / 2.0f);
+
+            firstBounds = firstBounds.withSizeKeepingCentre(30, 30);
+            secondBounds = secondBounds.withSizeKeepingCentre(30, 30);
+
+            auto const firstThemeTree = SettingsFile::getInstance()->getTheme(PlugDataLook::selectedThemes[0]);
+            auto const secondThemeTree = SettingsFile::getInstance()->getTheme(PlugDataLook::selectedThemes[1]);
+
+            g.setColour(PlugDataLook::getThemeColour(firstThemeTree, PlugDataColour::canvasBackgroundColourId));
+            g.fillEllipse(firstBounds.toFloat());
+
+            g.setColour(PlugDataLook::getThemeColour(secondThemeTree, PlugDataColour::canvasBackgroundColourId));
+            g.fillEllipse(secondBounds.toFloat());
+
+            g.setColour(PlugDataLook::getThemeColour(firstThemeTree, PlugDataColour::outlineColourId));
+            g.drawEllipse(firstBounds.toFloat(), 1.0f);
+
+            g.setColour(PlugDataLook::getThemeColour(secondThemeTree, PlugDataColour::outlineColourId));
+            g.drawEllipse(secondBounds.toFloat(), 1.0f);
+
+            auto const tick = getLookAndFeel().getTickShape(0.6f);
+            auto tickBounds = Rectangle<int>();
+
+            if (theme.toString() == firstThemeTree->getProperty("name").toString()) {
+                auto const textColour = PlugDataLook::getThemeColour(firstThemeTree, PlugDataColour::canvasBackgroundColourId).contrasting(0.8f);
+                g.setColour(textColour);
+                tickBounds = firstBounds;
+            } else {
+                auto const textColour = PlugDataLook::getThemeColour(secondThemeTree, PlugDataColour::canvasBackgroundColourId).contrasting(0.8f);
+                g.setColour(textColour);
+                tickBounds = secondBounds;
+            }
+
+            g.fillPath(tick, tick.getTransformToScaleToFit(tickBounds.reduced(9, 9).toFloat(), false));
+        }
+
+        void mouseUp(MouseEvent const& e) override
+        {
+            auto secondBounds = getLocalBounds();
+            auto firstBounds = secondBounds.removeFromLeft(getWidth() / 2.0f);
+
+            firstBounds = firstBounds.withSizeKeepingCentre(30, 30);
+            secondBounds = secondBounds.withSizeKeepingCentre(30, 30);
+
+            if (firstBounds.contains(e.x, e.y)) {
+                theme = PlugDataLook::selectedThemes[0];
+                triggerAsyncUpdate();
+            } else if (secondBounds.contains(e.x, e.y)) {
+                theme = PlugDataLook::selectedThemes[1];
+                triggerAsyncUpdate();
+            }
+        }
+
+        void handleAsyncUpdate() override
+        {
+            // Make sure the actual popup menu updates its theme
+            getTopLevelComponent()->sendLookAndFeelChange();
+        }
+    };
+
+    enum MenuItem {
+        NewPatch = 1,
+        OpenPatch,
+        History,
+        Save,
+        SaveAs,
+        State,
+        CompiledMode,
+        Compile,
+        FindExternals,
+        Discover,
+        Settings,
+        About
+    };
+
+    static int getMenuItemID(MenuItem const item)
+    {
+        if (item == MenuItem::History)
+            return 100;
+
+        return item;
+    }
+
+    static int getMenuItemIndex(MenuItem const item)
+    {
+        return item - 1;
+    }
+
+    StackArray<IconMenuItem*, 12> menuItems = {
+        new IconMenuItem(Icons::New, "New patch", false, false),
+        new IconMenuItem(Icons::Open, "Open patch...", false, false),
+        new IconMenuItem(Icons::History, "Recently opened", true, false),
+
+        new IconMenuItem(Icons::SavePatch, "Save patch", false, false),
+        new IconMenuItem(Icons::SaveAs, "Save patch as...", false, false),
+
+        new IconMenuItem(Icons::ExportState, "Workspace", true, false),
+
+        new IconMenuItem("", "Compiled mode", false, true),
+        new IconMenuItem(Icons::DevTools, "Compile...", false, false),
+
+        new IconMenuItem(Icons::Externals, "Find externals...", false, false),
+        new IconMenuItem(Icons::Sparkle, "Discover...", false, false),
+        new IconMenuItem(Icons::Settings, "Settings...", false, false),
+        new IconMenuItem(Icons::Info, "About...", false, false),
+    };
+    ThemeSelector themeSelector;
+};

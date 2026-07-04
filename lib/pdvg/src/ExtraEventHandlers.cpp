@@ -1,0 +1,1680 @@
+/*
+ * Copyright (C) 2021 Filipe Coelho <falktx@falktx.com>, Rob van den Berg <rghvdberg at gmail dot com
+ * Copyright (C) 2026 Wasted Audio <developer@wasted.audio>
+ * SPDX-License-Identifier: ISC
+*/
+
+#include "SubWidget.hpp"
+
+#include "ExtraEventHandlers.hpp"
+#include "PDWidget.hpp"
+
+START_NAMESPACE_DGL
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#define PI 3.14159265358979323846264338327f
+
+struct PDToggleEventHandler::PrivateData
+{
+    PDToggleEventHandler *const self;
+    SubWidget *const widget;
+    PDToggleEventHandler::Callback *callback;
+
+    bool isDown;
+
+    PrivateData(PDToggleEventHandler *const s, SubWidget *const w)
+        : self(s),
+          widget(w),
+          isDown(false),
+          callback(nullptr)
+    {
+    }
+
+    PrivateData(PDToggleEventHandler *const s, SubWidget *const w, PrivateData *const other)
+        : self(s),
+          widget(w),
+          callback(other->callback),
+          isDown(other->isDown)
+
+    {
+    }
+
+    void assignFrom(PrivateData *const other)
+    {
+        callback = other->callback;
+        isDown = other->isDown;
+    }
+
+    bool mouseEvent(const Widget::MouseEvent &ev)
+    {
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        if (ev.press && pdWidget->contains(ev.pos))
+        {
+            isDown = !isDown;
+            widget->repaint();
+
+            if (callback != nullptr)
+            {
+                try
+                {
+                    callback->switchClicked(widget, isDown);
+                }
+                DISTRHO_SAFE_EXCEPTION("SwitchEventHandler::mouseEvent");
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void setDown(const bool down) noexcept
+    {
+        isDown = down;
+        widget->repaint();
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+PDToggleEventHandler::PDToggleEventHandler(SubWidget *const self)
+    : pData(new PrivateData(this, self)) {}
+
+PDToggleEventHandler::PDToggleEventHandler(SubWidget *const self, const PDToggleEventHandler &other)
+    : pData(new PrivateData(this, self, other.pData)) {}
+
+PDToggleEventHandler &PDToggleEventHandler::operator=(const PDToggleEventHandler &other)
+{
+    pData->assignFrom(other.pData);
+    return *this;
+}
+
+PDToggleEventHandler::~PDToggleEventHandler()
+{
+    delete pData;
+}
+
+void PDToggleEventHandler::setCallback(Callback *const callback) noexcept
+{
+    pData->callback = callback;
+}
+
+bool PDToggleEventHandler::mouseEvent(const Widget::MouseEvent &ev)
+{
+    return pData->mouseEvent(ev);
+}
+
+bool PDToggleEventHandler::isDown() const noexcept
+{
+    return pData->isDown;
+}
+
+void PDToggleEventHandler::setDown(const bool down) noexcept
+{
+    return pData->setDown(down);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+// begin bang
+
+struct PDBangEventHandler::PrivateData
+{
+    PDBangEventHandler *const self;
+    SubWidget *const widget;
+    PDBangEventHandler::Callback *callback;
+
+    bool isDown;
+
+    PrivateData(PDBangEventHandler *const s, SubWidget *const w)
+        : self(s),
+          widget(w),
+          isDown(false),
+          callback(nullptr)
+    {
+    }
+
+    PrivateData(PDBangEventHandler *const s, SubWidget *const w, PrivateData *const other)
+        : self(s),
+          widget(w),
+          callback(other->callback),
+          isDown(other->isDown)
+
+    {
+    }
+
+    void assignFrom(PrivateData *const other)
+    {
+        callback = other->callback;
+        isDown = other->isDown;
+    }
+
+    bool mouseEvent(const Widget::MouseEvent &ev)
+    {
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        if (ev.press && pdWidget->contains(ev.pos))
+        {
+            isDown = true;
+            widget->repaint();
+
+            if (callback != nullptr)
+            {
+                try
+                {
+                    callback->bangClicked(widget);
+                }
+                DISTRHO_SAFE_EXCEPTION("BangEventHandler::mouseEvent");
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void setDown(const bool down) noexcept
+    {
+        isDown = down;
+        widget->repaint();
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+PDBangEventHandler::PDBangEventHandler(SubWidget *const self)
+    : pData(new PrivateData(this, self)) {}
+
+PDBangEventHandler::PDBangEventHandler(SubWidget *const self, const PDBangEventHandler &other)
+    : pData(new PrivateData(this, self, other.pData)) {}
+
+PDBangEventHandler &PDBangEventHandler::operator=(const PDBangEventHandler &other)
+{
+    pData->assignFrom(other.pData);
+    return *this;
+}
+
+PDBangEventHandler::~PDBangEventHandler()
+{
+    delete pData;
+}
+
+void PDBangEventHandler::setCallback(Callback *const callback) noexcept
+{
+    pData->callback = callback;
+}
+
+bool PDBangEventHandler::mouseEvent(const Widget::MouseEvent &ev)
+{
+    return pData->mouseEvent(ev);
+}
+
+bool PDBangEventHandler::isDown() const noexcept
+{
+    return pData->isDown;
+}
+
+void PDBangEventHandler::setDown(const bool down) noexcept
+{
+    return pData->setDown(down);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+// begin slider
+struct PDSliderEventHandler::PrivateData
+{
+    PDSliderEventHandler *const self;
+    SubWidget *const widget;
+    PDSliderEventHandler::Callback *callback;
+
+    float minimum;
+    float maximum;
+    float value;
+    float valueDef;
+    float valueTmp;
+    float valueAtDragStart;
+    bool usingDefault;
+    bool usingLog;
+    bool steadyOnClick;
+    bool dragging;
+    bool inverted;
+    bool valueIsSet;
+    double startedX;
+    double startedY;
+    Point<int> startPos;
+    Point<int> endPos;
+    DGL::Rectangle<double> sliderArea;
+    uint lastClickTime;
+    uint8_t lastMod;
+
+    PrivateData(PDSliderEventHandler *const s, SubWidget *const w)
+        : self(s),
+          widget(w),
+          callback(nullptr),
+          minimum(0.0f),
+          maximum(1.0f),
+          value(0.5f),
+          valueDef(value),
+          valueTmp(value),
+          valueAtDragStart(0.0f),
+          usingDefault(false),
+          usingLog(false),
+          steadyOnClick(false),
+          dragging(false),
+          inverted(false),
+          valueIsSet(false),
+          startedX(0.0),
+          startedY(0.0),
+          startPos(),
+          endPos(),
+          sliderArea(),
+          lastClickTime(0),
+          lastMod(0)
+    {
+    }
+
+    PrivateData(PDSliderEventHandler *const s, SubWidget *const w, PrivateData *const other)
+        : self(s),
+          widget(w),
+          callback(other->callback),
+          minimum(other->minimum),
+          maximum(other->maximum),
+          value(other->value),
+          valueDef(other->valueDef),
+          valueTmp(value),
+          valueAtDragStart(other->valueAtDragStart),
+          usingDefault(other->usingDefault),
+          usingLog(other->usingLog),
+          steadyOnClick(other->steadyOnClick),
+          startPos(other->startPos),
+          endPos(other->endPos),
+          dragging(false),
+          inverted(other->inverted),
+          valueIsSet(false),
+          sliderArea(other->sliderArea),
+          lastClickTime(0),
+          lastMod(0)
+    {
+    }
+
+    void assignFrom(PrivateData *const other)
+    {
+        callback = other->callback;
+        minimum = other->minimum;
+        maximum = other->maximum;
+        value = other->value;
+        valueDef = other->valueDef;
+        valueTmp = value;
+        valueAtDragStart = other->valueAtDragStart;
+        usingDefault = other->usingDefault;
+        usingLog = other->usingLog;
+        steadyOnClick = other->steadyOnClick;
+    }
+
+    inline float logscale(const float v) const
+    {
+        const float b = std::log(maximum / minimum) / (maximum - minimum);
+        const float a = maximum / std::exp(maximum * b);
+        return a * std::exp(b * v);
+    }
+
+    inline float invlogscale(const float v) const
+    {
+        const float b = std::log(maximum / minimum) / (maximum - minimum);
+        const float a = maximum / std::exp(maximum * b);
+        return std::log(v / a) / b;
+    }
+
+    bool mouseEvent(const Widget::MouseEvent &ev)
+    {
+        if (ev.button != 1)
+            return false;
+
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        const Point<int> screen = pdWidget->getScreenPos();
+
+        // Convert ev.pos to local widget coordinates
+        const double x = ev.pos.getX() - screen.getX();
+        const double y = ev.pos.getY() - screen.getY();
+        const Point<double> localPos(x, y);
+
+        if (ev.press)
+        {
+            if (!sliderArea.contains(localPos))
+                return false;
+
+            if (lastClickTime > 0 && ev.time > lastClickTime && ev.time - lastClickTime <= 300)
+            {
+                lastClickTime = 0;
+
+                setValue(valueDef, true);
+                valueTmp = value;
+                return true;
+            }
+
+            lastClickTime = ev.time;
+            dragging = true;
+
+            if (steadyOnClick)
+            {
+                // Don't jump - capture current value as the drag baseline
+                valueAtDragStart = value;
+                startedX = x;
+                startedY = y;
+            }
+            else
+            {
+                float vper = startPos.getY() == endPos.getY()
+                    ? (x - sliderArea.getX()) / sliderArea.getWidth()
+                    : (y - sliderArea.getY()) / sliderArea.getHeight();
+
+                float linearValue = inverted
+                    ? maximum - vper * (maximum - minimum)
+                    : minimum + vper * (maximum - minimum);
+
+                float newValue = usingLog
+                    ? logscale(linearValue)
+                    : linearValue;
+
+                if (newValue < minimum)
+                    valueTmp = newValue = minimum;
+                else if (newValue > maximum)
+                    valueTmp = newValue = maximum;
+
+                setValue(newValue, true);
+            }
+
+            return true;
+        }
+        else if (dragging)
+        {
+            dragging = false;
+            return true;
+        }
+        return false;
+    }
+
+    bool motionEvent(const Widget::MotionEvent &ev)
+    {
+        if (!dragging)
+            return false;
+
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        const Point<int> screen = pdWidget->getScreenPos();
+
+        // Convert to local coords - same space as startedX/startedY
+        const double x = ev.pos.getX() - screen.getX();
+        const double y = ev.pos.getY() - screen.getY();
+        const bool horizontal = startPos.getY() == endPos.getY();
+        const float divisor = (ev.mod & kModifierShift) ? 6.0f : 1.0f;
+        const float range = maximum - minimum;
+
+        if (steadyOnClick)
+        {
+            if (ev.mod != lastMod)
+            {
+                startedX = x;
+                startedY = y;
+                valueAtDragStart = value;
+                lastMod = ev.mod;
+            }
+
+            // Normalized value at drag start
+            float normalizedBase = usingLog
+                ? (invlogscale(valueAtDragStart) - minimum) / range
+                : (valueAtDragStart - minimum) / range;
+
+            // Normalized delta from click origin
+            const float normalizedDelta = horizontal
+                ? (x - startedX) / sliderArea.getWidth() / divisor
+                : (y - startedY) / sliderArea.getHeight() / divisor;
+
+            float normalizedNew = inverted
+                ? normalizedBase - normalizedDelta
+                : normalizedBase + normalizedDelta;
+
+            normalizedNew = std::max(0.0f, std::min(1.0f, normalizedNew));
+
+            // Convert back to value space, applying log scale if needed
+            float newValue = usingLog
+                ? logscale(minimum + normalizedNew * range)
+                : minimum + normalizedNew * range;
+
+            setValue(newValue, true);
+        }
+        else
+        {
+            if ((horizontal && sliderArea.containsX(x)) || (!horizontal && sliderArea.containsY(y)))
+            {
+                float vper = horizontal
+                    ? (x - sliderArea.getX()) / sliderArea.getWidth()
+                    : (y - sliderArea.getY()) / sliderArea.getHeight();
+
+                float linearValue = inverted ? maximum - vper * range
+                                             : minimum + vper * range;
+
+                float newValue = usingLog ? logscale(linearValue) : linearValue;
+
+                if (newValue < minimum)
+                    valueTmp = newValue = minimum;
+                else if (newValue > maximum)
+                    valueTmp = newValue = maximum;
+
+                setValue(newValue, true);
+            }
+        }
+
+        return true;
+    }
+
+    bool scrollEvent(const Widget::ScrollEvent &ev)
+    {
+        printf("scroll event\n");
+        return false;
+    }
+
+    float getNormalizedValue() const noexcept
+    {
+        const float diff = maximum - minimum;
+        return ((usingLog ? invlogscale(value) : value) - minimum) / diff;
+    }
+
+    void setRange(const float min, const float max) noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(max > min, );
+
+        if (value < min)
+        {
+            valueTmp = value = min;
+            widget->repaint();
+        }
+        else if (value > max)
+        {
+            valueTmp = value = max;
+            widget->repaint();
+        }
+
+        minimum = min;
+        maximum = max;
+    }
+
+    bool setValue(const float value2, const bool sendCallback)
+    {
+        if (d_isEqual(value, value2))
+            return false;
+
+        valueTmp = value = value2;
+        widget->repaint();
+
+        if (sendCallback && callback != nullptr)
+        {
+            try
+            {
+                callback->sliderValueChanged(widget, value);
+            }
+            DISTRHO_SAFE_EXCEPTION("PDSliderEventHandler::setValue");
+        }
+
+        return true;
+    }
+
+    void setInverted(bool inv) noexcept
+    {
+        if (inverted == inv)
+            return;
+
+        inverted = inv;
+        widget->repaint();
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+PDSliderEventHandler::PDSliderEventHandler(SubWidget *const self)
+    : pData(new PrivateData(this, self)) {}
+
+PDSliderEventHandler::PDSliderEventHandler(SubWidget *const self, const PDSliderEventHandler &other)
+    : pData(new PrivateData(this, self, other.pData)) {}
+
+PDSliderEventHandler &PDSliderEventHandler::operator=(const PDSliderEventHandler &other)
+{
+    pData->assignFrom(other.pData);
+    return *this;
+}
+
+PDSliderEventHandler::~PDSliderEventHandler()
+{
+    delete pData;
+}
+
+float PDSliderEventHandler::getValue() const noexcept
+{
+    return pData->value;
+}
+
+bool PDSliderEventHandler::setValue(const float value, const bool sendCallback) noexcept
+{
+    return pData->setValue(value, sendCallback);
+}
+
+float PDSliderEventHandler::getNormalizedValue() const noexcept
+{
+    return pData->getNormalizedValue();
+}
+
+void PDSliderEventHandler::setDefault(const float def) noexcept
+{
+    pData->valueDef = def;
+    pData->usingDefault = true;
+}
+
+void PDSliderEventHandler::setSliderArea(const double x, const double y,
+                                       const double w, const double h) noexcept
+{
+    pData->sliderArea = DGL::Rectangle<double>(x, y, w, h);
+}
+
+void PDSliderEventHandler::setRange(const float min, const float max) noexcept
+{
+    pData->setRange(min, max);
+}
+
+void PDSliderEventHandler::setUsingLogScale(const bool yesNo) noexcept
+{
+    pData->usingLog = yesNo;
+}
+
+void PDSliderEventHandler::setSteadyOnClick(const bool yesNo) noexcept
+{
+    pData->steadyOnClick = yesNo;
+}
+
+void PDSliderEventHandler::setStartPos(const int x, const int y) noexcept
+{
+    pData->startPos = Point<int>(x, y);
+}
+
+void PDSliderEventHandler::setEndPos(const int x, const int y) noexcept
+{
+    pData->endPos = Point<int>(x, y);
+}
+
+void PDSliderEventHandler::setInverted(const bool inv) noexcept
+{
+    pData->setInverted(inv);
+}
+
+bool PDSliderEventHandler::isInverted() noexcept
+{
+    return pData->inverted;
+}
+
+void PDSliderEventHandler::setCallback(Callback *const callback) noexcept
+{
+    pData->callback = callback;
+}
+
+bool PDSliderEventHandler::mouseEvent(const Widget::MouseEvent &ev)
+{
+    return pData->mouseEvent(ev);
+}
+
+bool PDSliderEventHandler::motionEvent(const Widget::MotionEvent &ev)
+{
+    return pData->motionEvent(ev);
+}
+
+bool PDSliderEventHandler::scrollEvent(const Widget::ScrollEvent &ev)
+{
+    return pData->scrollEvent(ev);
+}
+// end slider
+// --------------------------------------------------------------------------------------------------------------------
+
+// begin radio
+
+struct PDRadioEventHandler::PrivateData
+{
+    PDRadioEventHandler *const self;
+    SubWidget *const widget;
+    PDRadioEventHandler::Callback *callback;
+
+    uint step;
+    uint value;
+    bool horizontal;
+    bool hover;
+    uint hoverPos;
+
+    PrivateData(PDRadioEventHandler *const s, SubWidget *const w)
+        : self(s),
+          widget(w),
+          callback(nullptr),
+          step(1),
+          value(0),
+          horizontal(false),
+          hover(false),
+          hoverPos(0)
+    {
+    }
+
+    PrivateData(PDRadioEventHandler *const s, SubWidget *const w, PrivateData *const other)
+        : self(s),
+          widget(w),
+          callback(other->callback),
+          step(other->step),
+          value(other->value),
+          horizontal(other->horizontal),
+          hover(other->hover),
+          hoverPos(other->hoverPos)
+    {
+    }
+
+    void assignFrom(PrivateData *const other)
+    {
+        callback = other->callback;
+        step = other->step;
+        value = other->value;
+        horizontal = other->horizontal;
+        hover = other->hover;
+        hoverPos = other->hoverPos;
+    }
+
+    bool mouseEvent(const Widget::MouseEvent &ev)
+    {
+
+        if (ev.button != 1)
+            return false;
+
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        if (ev.press && pdWidget->contains(ev.pos))
+        {
+            // Convert screen pos to local widget coords
+            const Point<int> screen = pdWidget->getScreenPos();
+            const double localX = ev.pos.getX() - screen.getX();
+            const double localY = ev.pos.getY() - screen.getY();
+
+            if (horizontal)
+                value = (float)localX/(float)pdWidget->getWidth() * (float)step;
+            else
+                value = (float)localY/(float)pdWidget->getHeight() * (float)step;
+            setValue(value, true);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool motionEvent(const Widget::MotionEvent &ev)
+    {
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        if (pdWidget->contains(ev.pos))
+        {
+            // Convert screen pos to local widget coords
+            const Point<int> screen = pdWidget->getScreenPos();
+            const double localX = ev.pos.getX() - screen.getX();
+            const double localY = ev.pos.getY() - screen.getY();
+
+            hover = true;
+            if (horizontal)
+                hoverPos = (float)localX/(float)pdWidget->getWidth() * (float)step;
+            else
+                hoverPos = (float)localY/(float)pdWidget->getHeight() * (float)step;
+
+            widget->repaint();
+        } else {
+            hover = false;
+            hoverPos = -1;
+        }
+
+        return hover;
+    }
+
+    bool setValue(const uint value2, const bool sendCallback)
+    {
+        value = value2;
+        widget->repaint();
+
+        if (sendCallback && callback != nullptr)
+        {
+            try
+            {
+                callback->radioValueChanged(widget, value);
+            }
+            DISTRHO_SAFE_EXCEPTION("PDRadioEventHandler::setValue");
+        }
+
+        return true;
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+PDRadioEventHandler::PDRadioEventHandler(SubWidget *const self)
+    : pData(new PrivateData(this, self)) {}
+
+PDRadioEventHandler::PDRadioEventHandler(SubWidget *const self, const PDRadioEventHandler &other)
+    : pData(new PrivateData(this, self, other.pData)) {}
+
+PDRadioEventHandler &PDRadioEventHandler::operator=(const PDRadioEventHandler &other)
+{
+    pData->assignFrom(other.pData);
+    return *this;
+}
+
+PDRadioEventHandler::~PDRadioEventHandler()
+{
+    delete pData;
+}
+
+uint PDRadioEventHandler::getValue() const noexcept
+{
+    return pData->value;
+}
+
+bool PDRadioEventHandler::setValue(const uint value, const bool sendCallback) noexcept
+{
+    return pData->setValue(value, sendCallback);
+}
+
+void PDRadioEventHandler::setStep(const uint step) noexcept
+{
+    pData->step = step;
+}
+
+void PDRadioEventHandler::setHorizontal() noexcept
+{
+    pData->horizontal = true;
+}
+
+void PDRadioEventHandler::setCallback(Callback *const callback) noexcept
+{
+    pData->callback = callback;
+}
+
+bool PDRadioEventHandler::mouseEvent(const Widget::MouseEvent &ev)
+{
+    return pData->mouseEvent(ev);
+}
+
+bool PDRadioEventHandler::motionEvent(const Widget::MotionEvent &ev)
+{
+    return pData->motionEvent(ev);
+}
+
+uint PDRadioEventHandler::getStep() const noexcept { return pData->step; }
+bool PDRadioEventHandler::getHorizontal() const noexcept { return pData->horizontal; }
+bool PDRadioEventHandler::isHovered() const noexcept { return pData->hover; }
+uint PDRadioEventHandler::getHover() const noexcept { return pData->hoverPos; }
+
+// end radio
+// --------------------------------------------------------------------------------------------------------------------
+
+// begin draggable number
+
+enum DragMode {
+    Regular,
+    Integer,
+    Logarithmic
+};
+struct PDDragNumEventHandler::PrivateData
+{
+    PDDragNumEventHandler *const self;
+    SubWidget *const widget;
+    PDDragNumEventHandler::Callback *callback;
+
+    float minimum;
+    float maximum;
+    float value;
+    float valueDef;
+    float valueTmp;
+    float valueAtDragStart;
+    bool logMode;
+    bool dragging;
+    double startedY;
+    DragMode dragMode;
+    uint lastClickTime;
+    uint8_t lastMod;
+
+    PrivateData(PDDragNumEventHandler *const s, SubWidget *const w)
+        : self(s),
+          widget(w),
+          callback(nullptr),
+          minimum(0.0f),
+          maximum(1.0f),
+          value(0.5f),
+          valueDef(value),
+          valueTmp(value),
+          valueAtDragStart(0.0f),
+          logMode(false),
+          dragging(false),
+          startedY(0.0),
+          dragMode(Regular),
+          lastClickTime(0),
+          lastMod(0)
+    {
+    }
+
+    PrivateData(PDDragNumEventHandler *const s, SubWidget *const w, PrivateData *const other)
+        : self(s),
+          widget(w),
+          callback(other->callback),
+          minimum(other->minimum),
+          maximum(other->maximum),
+          value(other->value),
+          valueDef(other->valueDef),
+          valueTmp(other->valueTmp),
+          valueAtDragStart(other->valueAtDragStart),
+          logMode(other->logMode),
+          dragging(false),
+          dragMode(other->dragMode),
+          lastClickTime(0),
+          lastMod(0)
+    {
+    }
+
+    void assignFrom(PrivateData *const other)
+    {
+        callback = other->callback;
+        minimum = other->minimum;
+        maximum = other->maximum;
+        value = other->value;
+        valueDef = other->valueDef;
+        valueTmp = other->valueTmp;
+        valueAtDragStart = other->valueAtDragStart;
+        logMode = other->logMode;
+        dragMode = other->dragMode;
+    }
+
+    double limitValue(double v) const
+    {
+        if (minimum == 0.0f && maximum == 0.0f)
+            return v;
+        return std::max((double)minimum, std::min((double)maximum, v));
+    }
+
+    bool mouseEvent(const Widget::MouseEvent &ev)
+    {
+        if (ev.button != 1)
+            return false;
+
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        const Point<int> screen = pdWidget->getScreenPos();
+        const double y = ev.pos.getY() - screen.getY();
+        // const float x = (float)(ev.pos.getX() - screen.getX());
+
+        if (ev.press)
+        {
+            if (!pdWidget->contains(ev.pos))
+                return false;
+
+            if (lastClickTime > 0 && ev.time > lastClickTime && ev.time - lastClickTime <= 300)
+            {
+                lastClickTime = 0;
+
+                setValue(valueDef, true);
+                valueTmp = value;
+                return true;
+            }
+
+            lastClickTime = ev.time;
+            dragging = true;
+            valueAtDragStart = value;
+            startedY = y;
+
+            return true;
+        }
+        else if (dragging)
+        {
+            if (callback != nullptr)
+                callback->numberValueChanged(widget, valueTmp);
+
+            dragging = false;
+            return true;
+        }
+        return false;
+    }
+
+    bool motionEvent(const Widget::MotionEvent &ev)
+    {
+        if (!dragging)
+            return false;
+
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        const Point<int> screen = pdWidget->getScreenPos();
+        const double y = ev.pos.getY() - screen.getY();
+        const float divisor = (ev.mod & kModifierShift) ? 6.0f : 1.0f;
+
+        if (ev.mod != lastMod)
+        {
+            startedY = y;
+            valueAtDragStart = value;
+            lastMod = ev.mod;
+        }
+
+        if (logMode && minimum > 0.0f && maximum > minimum)
+        {
+            // Work in log space: map value to [0,1] via log, apply delta, map back
+            float safeVal = std::max(valueAtDragStart, minimum);
+            float normStart = (std::log(safeVal) - std::log(minimum))
+                            / (std::log(maximum) - std::log(minimum));
+            float pixelDelta = (float)(y - startedY);
+            float normDelta = pixelDelta / (widget->getHeight() * 3.0f) * divisor;
+            float newNorm = jmax(0.0f, jmin(1.0f, normStart - normDelta));
+            float newValue = minimum * std::exp(newNorm * (std::log(maximum) - std::log(minimum)));
+            newValue = limitValue(newValue);
+            setValue(newValue, true);
+        }
+        else
+        {
+            float newValue = valueAtDragStart - (y - startedY) / divisor;
+            newValue = limitValue(newValue);
+            setValue(newValue, true);
+        }
+
+        return true;
+    }
+
+    bool scrollEvent(const Widget::ScrollEvent &ev)
+    {
+        return false;
+    }
+
+    bool keyboardEvent(const Widget::KeyboardEvent &ev)
+    {
+        return false;
+    }
+
+    bool setValue(const float value2, const bool sendCallback)
+    {
+        if (d_isEqual(value, value2))
+            return false;
+
+        valueTmp = value = value2;
+        widget->repaint();
+
+        if (sendCallback && callback != nullptr)
+        {
+            try
+            {
+                callback->numberValueChanged(widget, value);
+            }
+            DISTRHO_SAFE_EXCEPTION("PDDragNumEventHandler::setValue");
+        }
+
+        return true;
+    }
+};
+
+PDDragNumEventHandler::PDDragNumEventHandler(SubWidget *const self)
+    : pData(new PrivateData(this, self)) {}
+
+PDDragNumEventHandler::PDDragNumEventHandler(SubWidget *const self, const PDDragNumEventHandler &other)
+    : pData(new PrivateData(this, self, other.pData)) {}
+
+PDDragNumEventHandler &PDDragNumEventHandler::operator=(const PDDragNumEventHandler &other)
+{
+    pData->assignFrom(other.pData);
+    return *this;
+}
+
+PDDragNumEventHandler::~PDDragNumEventHandler()
+{
+    delete pData;
+}
+
+float PDDragNumEventHandler::getValue() const noexcept
+{
+    return pData->value;
+}
+
+bool PDDragNumEventHandler::isDragging() noexcept
+{
+    return pData->dragging;
+}
+
+bool PDDragNumEventHandler::setValue(const float value, const bool sendCallback) noexcept
+{
+    return pData->setValue(value, sendCallback);
+}
+
+void PDDragNumEventHandler::setDefault(const float def) noexcept
+{
+    pData->valueDef = def;
+}
+
+void PDDragNumEventHandler::setRange(float min, float max) noexcept
+{
+    pData->minimum = min;
+    pData->maximum = max;
+}
+
+void PDDragNumEventHandler::setLogMode(bool log) noexcept
+{
+    pData->logMode = log;
+}
+
+void PDDragNumEventHandler::setCallback(Callback *const callback) noexcept
+{
+    pData->callback = callback;
+}
+
+bool PDDragNumEventHandler::mouseEvent(const Widget::MouseEvent &ev)
+{
+    return pData->mouseEvent(ev);
+}
+
+bool PDDragNumEventHandler::motionEvent(const Widget::MotionEvent &ev)
+{
+    return pData->motionEvent(ev);
+}
+
+bool PDDragNumEventHandler::scrollEvent(const Widget::ScrollEvent &ev)
+{
+    return pData->scrollEvent(ev);
+}
+
+bool PDDragNumEventHandler::keyboardEvent(const Widget::KeyboardEvent &ev)
+{
+    return pData->keyboardEvent(ev);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// begin number
+
+struct PDNumberEventHandler::PrivateData
+{
+    PDNumberEventHandler *const self;
+    SubWidget *const widget;
+    PDNumberEventHandler::Callback *callback;
+
+    float minimum;
+    float maximum;
+    float value;
+    float valueDef;
+    float valueTmp;
+    float valueAtDragStart;
+    bool usingLog;
+    bool dragging;
+
+    PrivateData(PDNumberEventHandler *const s, SubWidget *const w)
+        : self(s),
+          widget(w),
+          callback(nullptr),
+          minimum(0.0f),
+          maximum(1.0f),
+          value(0.5f),
+          valueDef(value),
+          valueTmp(value),
+          valueAtDragStart(0.0f),
+          usingLog(false),
+          dragging(false)
+    {
+    }
+
+    PrivateData(PDNumberEventHandler *const s, SubWidget *const w, PrivateData *const other)
+        : self(s),
+          widget(w),
+          callback(other->callback),
+          minimum(other->minimum),
+          maximum(other->maximum),
+          value(other->value),
+          valueDef(other->valueDef),
+          valueTmp(other->valueTmp),
+          valueAtDragStart(other->valueAtDragStart),
+          usingLog(other->usingLog),
+          dragging(false)
+    {
+    }
+
+    void assignFrom(PrivateData *const other)
+    {
+        callback = other->callback;
+        minimum = other->minimum;
+        maximum = other->maximum;
+        value = other->value;
+        valueDef = other->valueDef;
+        valueTmp = other->valueTmp;
+        valueAtDragStart = other->valueAtDragStart;
+        usingLog = other->usingLog;
+    }
+
+    bool mouseEvent(const Widget::MouseEvent &ev)
+    {
+        if (ev.button != 1)
+            return false;
+    }
+    bool motionEvent(const Widget::MotionEvent &ev)
+    {
+        if (!dragging)
+            return false;
+    }
+    bool scrollEvent(const Widget::ScrollEvent &ev)
+    {
+        return false;
+    }
+
+    bool setValue(const float value2, const bool sendCallback)
+    {
+        value = value2;
+        widget->repaint();
+
+        if (sendCallback && callback != nullptr)
+        {
+            try
+            {
+                callback->numberValueChanged(widget, value);
+            }
+            DISTRHO_SAFE_EXCEPTION("PDNumberEventHandler::setValue");
+        }
+
+        return true;
+    }
+};
+
+PDNumberEventHandler::PDNumberEventHandler(SubWidget *const self)
+    : pData(new PrivateData(this, self)) {}
+
+PDNumberEventHandler::PDNumberEventHandler(SubWidget *const self, const PDNumberEventHandler &other)
+    : pData(new PrivateData(this, self, other.pData)) {}
+
+PDNumberEventHandler &PDNumberEventHandler::operator=(const PDNumberEventHandler &other)
+{
+    pData->assignFrom(other.pData);
+    return *this;
+}
+
+PDNumberEventHandler::~PDNumberEventHandler()
+{
+    delete pData;
+}
+
+float PDNumberEventHandler::getValue() const noexcept
+{
+    return pData->value;
+}
+
+bool PDNumberEventHandler::setValue(const float value, const bool sendCallback) noexcept
+{
+    return pData->setValue(value, sendCallback);
+}
+
+void PDNumberEventHandler::setRange(float min, float max) noexcept
+{
+    pData->minimum = min;
+    pData->maximum = max;
+}
+
+void PDNumberEventHandler::setCallback(Callback *const callback) noexcept
+{
+    pData->callback = callback;
+}
+
+bool PDNumberEventHandler::mouseEvent(const Widget::MouseEvent &ev)
+{
+    return pData->mouseEvent(ev);
+}
+
+bool PDNumberEventHandler::motionEvent(const Widget::MotionEvent &ev)
+{
+    return pData->motionEvent(ev);
+}
+
+bool PDNumberEventHandler::scrollEvent(const Widget::ScrollEvent &ev)
+{
+    return pData->scrollEvent(ev);
+}
+
+// end number
+// --------------------------------------------------------------------------------------------------------------------
+
+// begin knob
+struct PDKnobEventHandler::PrivateData
+{
+    PDKnobEventHandler *const self;
+    SubWidget *const widget;
+    PDKnobEventHandler::Callback *callback;
+
+    float minimum;
+    float maximum;
+    int step;
+    float value;
+    float valueDef;
+    float valueTmp;
+    float valueAtDragStart;
+    bool usingDefault;
+    LogMode logMode;
+    float expFact;
+    bool jumpOnClick;
+    bool discrete;
+    bool dragging;
+    bool valueIsSet;
+    double startedX;
+    double startedY;
+    float arcBegin;
+    float arcEnd;
+    DGL::Rectangle<double> knobArea;
+    uint lastClickTime;
+    uint8_t lastMod;
+
+    PrivateData(PDKnobEventHandler *const s, SubWidget *const w)
+        : self(s),
+          widget(w),
+          callback(nullptr),
+          minimum(0.0f),
+          maximum(1.0f),
+          step(0),
+          value(0.5f),
+          valueDef(value),
+          valueTmp(value),
+          valueAtDragStart(0.0f),
+          usingDefault(false),
+          logMode(LogMode::LIN),
+          expFact(1.0f),
+          jumpOnClick(false),
+          discrete(false),
+          dragging(false),
+          valueIsSet(false),
+          startedX(0.0),
+          startedY(0.0),
+          arcBegin(3.927f),
+          arcEnd(8.639f),
+          knobArea(),
+          lastClickTime(0),
+          lastMod(0)
+    {
+    }
+
+    PrivateData(PDKnobEventHandler *const s, SubWidget *const w, PrivateData *const other)
+        : self(s),
+          widget(w),
+          callback(other->callback),
+          minimum(other->minimum),
+          maximum(other->maximum),
+          step(other->step),
+          value(other->value),
+          valueDef(other->valueDef),
+          valueTmp(value),
+          valueAtDragStart(other->valueAtDragStart),
+          usingDefault(other->usingDefault),
+          logMode(other->logMode),
+          expFact(other->expFact),
+          jumpOnClick(other->jumpOnClick),
+          discrete(other->discrete),
+          arcBegin(other->arcBegin),
+          arcEnd(other->arcEnd),
+          dragging(false),
+          valueIsSet(false),
+          knobArea(other->knobArea),
+          lastClickTime(0),
+          lastMod(0)
+    {
+    }
+
+    void assignFrom(PrivateData *const other)
+    {
+        callback = other->callback;
+        minimum = other->minimum;
+        maximum = other->maximum;
+        step = other->step;
+        value = other->value;
+        valueDef = other->valueDef;
+        valueTmp = value;
+        valueAtDragStart = other->valueAtDragStart;
+        usingDefault = other->usingDefault;
+        logMode = other->logMode;
+        expFact = other->expFact;
+        jumpOnClick = other->jumpOnClick;
+        discrete = other->discrete;
+    }
+
+    inline float logscale(const float v) const
+    {
+        const float b = std::log(maximum / minimum) / (maximum - minimum);
+        const float a = maximum / std::exp(maximum * b);
+        return a * std::exp(b * v);
+    }
+
+    inline float invlogscale(const float v) const
+    {
+        const float b = std::log(maximum / minimum) / (maximum - minimum);
+        const float a = maximum / std::exp(maximum * b);
+        return std::log(v / a) / b;
+    }
+
+    inline float expscale(const float v) const
+    {
+        const float t = (v - minimum) / (maximum - minimum);
+        return minimum + std::pow(t, expFact) * (maximum - minimum);
+    }
+
+    inline float invexpscale(const float v) const
+    {
+        const float t = (v - minimum) / (maximum - minimum);
+        return minimum + std::pow(t, 1.0f / expFact) * (maximum - minimum);
+    }
+
+    inline float quantValue(int step, float newValue, float range, float minimum, float maximum) const
+    {
+        const int numSteps = std::round(range / step);
+        const float scaledStep = range / numSteps;
+
+        const float rest = std::fmod(newValue - minimum, scaledStep);
+        newValue = newValue - rest + (rest > scaledStep / 2.0f ? scaledStep : 0.0f);
+        newValue = clamp(newValue, maximum, minimum);
+        return newValue;
+    }
+
+    bool mouseEvent(const Widget::MouseEvent &ev)
+    {
+        if (ev.button != 1)
+            return false;
+
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        const Point<int> screen = pdWidget->getScreenPos();
+
+        // Convert ev.pos to local widget coordinates
+        const double x = ev.pos.getX() - screen.getX();
+        const double y = ev.pos.getY() - screen.getY();
+        const Point<double> localPos(x, y);
+
+        if (ev.press)
+        {
+            if (!knobArea.contains(localPos))
+                return false;
+
+            const float range = maximum - minimum;
+
+            if (lastClickTime > 0 && ev.time > lastClickTime && ev.time - lastClickTime <= 300)
+            {
+                lastClickTime = 0;
+
+                if (step > 0 && discrete)
+                    valueDef = quantValue(step, valueDef, range, minimum, maximum);
+
+                setValue(valueDef, true);
+                valueTmp = value;
+                return true;
+            }
+
+            lastClickTime = ev.time;
+
+            dragging = true;
+            startedX = x;
+            startedY = y;
+
+            if (!jumpOnClick)
+            {
+                // Don't jump - capture current value as the drag baseline
+                valueAtDragStart = value;
+            }
+            else
+            {
+                // float vper = (y - knobArea.getY()) / knobArea.getHeight();
+
+                // float linearValue = maximum - vper * range;
+
+                const double cx = knobArea.getX() + knobArea.getWidth() * 0.5;
+                const double cy = knobArea.getY() + knobArea.getHeight() * 0.5;
+                const float dx = x - cx;
+                const float dy = y - cy;
+
+                float angle = std::atan2(dx, -dy);
+                while (angle < 0.0f || angle < arcBegin)
+                    angle += PI * 2.0f;
+
+                const float vper = (angle - arcBegin) / (arcEnd - arcBegin);
+                float linearValue = minimum + clamp(vper, 1.0f, 0.0f) * range;
+
+                float newValue;
+                if (logMode == LogMode::LOG)
+                    newValue = logscale(linearValue);
+                else if (logMode == LogMode::EXP)
+                    newValue = expscale(linearValue);
+                else
+                    newValue = linearValue;
+
+                if (newValue < minimum)
+                    valueTmp = newValue = minimum;
+                else if (newValue > maximum)
+                    valueTmp = newValue = maximum;
+                else if (step > 0 && discrete)
+                {
+                    newValue = quantValue(step, newValue, range, minimum, maximum);
+                }
+
+                setValue(newValue, true);
+            }
+
+            return true;
+        }
+        else if (dragging)
+        {
+            dragging = false;
+            return true;
+        }
+        return false;
+    }
+
+    bool motionEvent(const Widget::MotionEvent &ev)
+    {
+        if (!dragging)
+            return false;
+
+        PDWidget* pdWidget = dynamic_cast<PDWidget*>(widget);
+        const Point<int> screen = pdWidget->getScreenPos();
+
+        // Convert to local coords - same space as startedX/startedY
+        const double x = ev.pos.getX() - screen.getX();
+        const double y = ev.pos.getY() - screen.getY();
+        const float range = maximum - minimum;
+        const float divisor = (ev.mod & kModifierShift) ? 12.0f : 3.0f;
+
+        if (ev.mod != lastMod)
+        {
+            startedX = x;
+            startedY = y;
+            valueAtDragStart = value;
+            lastMod = ev.mod;
+        }
+
+        float normalizedBase;
+        if (logMode == LogMode::LOG)
+            normalizedBase = (invlogscale(valueAtDragStart) - minimum) / range;
+        else if (logMode == LogMode::EXP)
+            normalizedBase = (invexpscale(valueAtDragStart) - minimum) / range;
+        else
+            normalizedBase = (valueAtDragStart - minimum) / range;
+
+        const double movDiffX = startedX - x;
+        const double movDiffY = y - startedY;
+        double movDiff = std::abs(movDiffX) > std::abs(movDiffY) ? movDiffX : movDiffY;
+        const float normalizedDelta = movDiff / knobArea.getHeight() / divisor;
+
+        float normalizedNew = normalizedBase - normalizedDelta;
+
+        normalizedNew = std::max(0.0f, std::min(1.0f, normalizedNew));
+
+        float newValue;
+        if (logMode == LogMode::LOG)
+            newValue = logscale(normalizedNew * range + minimum);
+        else if (logMode == LogMode::EXP)
+            newValue = expscale(normalizedNew * range + minimum);
+        else
+            newValue = normalizedNew * range + minimum;
+
+        if (step > 0 && discrete)
+        {
+            newValue = quantValue(step, newValue, range, minimum, maximum);
+        }
+
+        setValue(newValue, true);
+
+        return true;
+    }
+
+    bool scrollEvent(const Widget::ScrollEvent &ev)
+    {
+        printf("scroll event\n");
+        return false;
+    }
+
+    float getNormalizedValue() const noexcept
+    {
+        const float diff = maximum - minimum;
+        float normValue;
+        if (logMode == LogMode::LOG)
+            normValue = invlogscale(value);
+        else if (logMode == LogMode::EXP)
+            normValue = invexpscale(value);
+        else
+            normValue = value;
+
+        return (normValue - minimum) / diff;
+    }
+
+    void setRange(const float min, const float max) noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(max > min, );
+
+        if (value < min)
+        {
+            valueTmp = value = min;
+            widget->repaint();
+        }
+        else if (value > max)
+        {
+            valueTmp = value = max;
+            widget->repaint();
+        }
+
+        minimum = min;
+        maximum = max;
+    }
+
+    bool setValue(const float value2, const bool sendCallback)
+    {
+        if (d_isEqual(value, value2))
+            return false;
+
+        valueTmp = value = value2;
+        widget->repaint();
+
+        if (sendCallback && callback != nullptr)
+        {
+            try
+            {
+                callback->knobValueChanged(widget, value);
+            }
+            DISTRHO_SAFE_EXCEPTION("PDKnobEventHandler::setValue");
+        }
+
+        return true;
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+PDKnobEventHandler::PDKnobEventHandler(SubWidget *const self)
+    : pData(new PrivateData(this, self)) {}
+
+PDKnobEventHandler::PDKnobEventHandler(SubWidget *const self, const PDKnobEventHandler &other)
+    : pData(new PrivateData(this, self, other.pData)) {}
+
+PDKnobEventHandler &PDKnobEventHandler::operator=(const PDKnobEventHandler &other)
+{
+    pData->assignFrom(other.pData);
+    return *this;
+}
+
+PDKnobEventHandler::~PDKnobEventHandler()
+{
+    delete pData;
+}
+
+float PDKnobEventHandler::getValue() const noexcept
+{
+    return pData->value;
+}
+
+bool PDKnobEventHandler::setValue(const float value, const bool sendCallback) noexcept
+{
+    return pData->setValue(value, sendCallback);
+}
+
+float PDKnobEventHandler::getNormalizedValue() const noexcept
+{
+    return pData->getNormalizedValue();
+}
+
+void PDKnobEventHandler::setDefault(const float def) noexcept
+{
+    pData->valueDef = def;
+    pData->usingDefault = true;
+}
+
+void PDKnobEventHandler::setKnobArea(const double x, const double y,
+                                       const double w, const double h) noexcept
+{
+    pData->knobArea = DGL::Rectangle<double>(x, y, w, h);
+}
+
+void PDKnobEventHandler::setRange(const float min, const float max) noexcept
+{
+    pData->setRange(min, max);
+}
+
+void PDKnobEventHandler::setStep(const float step) noexcept
+{
+    pData->step = step;
+}
+
+void PDKnobEventHandler::setUsingLogScale(const LogMode mode) noexcept
+{
+    pData->logMode = mode;
+}
+
+void PDKnobEventHandler::setExpFactor(const float expFact) noexcept
+{
+    pData->expFact = expFact;
+}
+
+void PDKnobEventHandler::setJumpOnClick(const bool yesNo) noexcept
+{
+    pData->jumpOnClick = yesNo;
+}
+
+void PDKnobEventHandler::setDiscrete(const bool yesNo) noexcept
+{
+    pData->discrete = yesNo;
+}
+
+void PDKnobEventHandler::setArc(const float arcBegin, const float arcEnd) noexcept
+{
+    pData->arcBegin = arcBegin;
+    pData->arcEnd = arcEnd;
+}
+
+void PDKnobEventHandler::setCallback(Callback *const callback) noexcept
+{
+    pData->callback = callback;
+}
+
+bool PDKnobEventHandler::mouseEvent(const Widget::MouseEvent &ev)
+{
+    return pData->mouseEvent(ev);
+}
+
+bool PDKnobEventHandler::motionEvent(const Widget::MotionEvent &ev)
+{
+    return pData->motionEvent(ev);
+}
+
+bool PDKnobEventHandler::scrollEvent(const Widget::ScrollEvent &ev)
+{
+    return pData->scrollEvent(ev);
+}
+// end knob
+
+END_NAMESPACE_DGL

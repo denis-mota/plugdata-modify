@@ -1,0 +1,62 @@
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+HVCC_DIR="$(dirname "$SCRIPT_DIR")/hvcc"
+
+TMPSCRIPT=$(mktemp /tmp/heavy_wrapper_XXXXXX.py)
+cat > "$TMPSCRIPT" << 'INNEREOF'
+import sys, os, json, tempfile
+
+args = sys.argv[1:]
+
+# Find meta file arg (handles both -m/path and -m /path)
+meta_file = None
+new_args = []
+i = 0
+while i < len(args):
+    arg = args[i]
+    if arg.startswith("-m") and len(arg) > 2:
+        meta_file = arg[2:]
+        new_args.append(f"-m{meta_file}")
+    elif arg in ("-m", "--meta"):
+        new_args.append(arg)
+        if i + 1 < len(args):
+            meta_file = args[i + 1]
+            new_args.append(meta_file)
+            i += 1
+    else:
+        new_args.append(arg)
+    i += 1
+
+# If no meta, create one with enable_ui=2
+if meta_file is None:
+    meta_file = tempfile.mktemp(suffix=".json")
+    with open(meta_file, "w") as f:
+        json.dump({"dpf": {"enable_ui": 2}}, f)
+    new_args.append(f"-m{meta_file}")
+
+# Patch meta to ensure enable_ui=2
+if meta_file and os.path.exists(meta_file):
+    with open(meta_file, "r") as f:
+        meta = json.load(f)
+    if "dpf" not in meta:
+        meta["dpf"] = {}
+    meta["dpf"]["enable_ui"] = 2
+    with open(meta_file, "w") as f:
+        json.dump(meta, f, indent=4)
+
+# Find hvcc source
+hvcc_candidates = [
+    "/home/denis/Área de trabalho/pd-hvcc/hvcc",
+    os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "..", "hvcc"),
+]
+for candidate in hvcc_candidates:
+    if os.path.exists(os.path.join(candidate, "hvcc", "main.py")):
+        sys.path.insert(0, candidate)
+        break
+
+from hvcc.main import main
+sys.argv = ["hvcc"] + new_args
+sys.exit(main())
+INNEREOF
+
+exec python3 "$TMPSCRIPT" "$@"

@@ -1,0 +1,49 @@
+[submodule "JUCE"]
+	path = Libraries/JUCE
+	url = https://github.com/plugdata-team/JUCE.git
+[submodule "Libraries/pure-data"]
+	path = Libraries/pure-data
+	url = https://github.com/plugdata-team/plugdata-pd
+[submodule "Libraries/heavylib"]
+	path = Libraries/heavylib
+	url = https://github.com/Wasted-Audio/heavylib.git
+[submodule "Libraries/pd-lua"]
+	path = Libraries/pd-lua
+	url = https://github.com/timothyschoen/pd-lua
+[submodule "Libraries/clap-juce-extensions"]
+	path = Libraries/clap-juce-extensions
+	url = https://github.com/free-audio/clap-juce-extensions.git
+[submodule "Libraries/pd-else"]
+	path = Libraries/pd-else
+	url = https://github.com/timothyschoen/pd-else.git
+[submodule "Libraries/readerwriterqueue"]
+	path = Libraries/readerwriterqueue
+	url = https://github.com/cameron314/readerwriterqueue.git
+[submodule "Libraries/concurrentqueue"]
+	path = Libraries/concurrentqueue
+	url = https://github.com/cameron314/concurrentqueue.git
+[submodule "Libraries/Gem"]
+	path = Libraries/Gem
+	url = https://github.com/plugdata-team/plugdata-gem.git
+[submodule "Libraries/ghc_filesystem"]
+	path = Libraries/ghc_filesystem
+	url = https://github.com/gulrak/filesystem.git
+[submodule "Libraries/nanovg"]
+	path = Libraries/nanovg
+	url = https://github.com/timothyschoen/nanovg.git
+[submodule "Libraries/pd-cyclone"]
+	path = Libraries/pd-cyclone
+	url = https://github.com/timothyschoen/pd-cyclone
+[submodule "Libraries/fuzzysearchdatabase"]
+	path = Libraries/fuzzysearchdatabase
+	url = https://timschoen@bitbucket.org/j_norberg/fuzzysearchdatabase.git
+[submodule "Libraries/melatonin_perfetto"]
+	path = Libraries/melatonin_perfetto
+	url = https://github.com/sudara/melatonin_perfetto.git
+	branch = main
+[submodule "Libraries/libwebp"]
+	path = Libraries/libwebp
+	url = https://github.com/webmproject/libwebp.git
+[submodule "Libraries/xz"]
+	path = Libraries/xz
+	url = https://github.com/tukaani-project/xz.git

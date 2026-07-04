@@ -1,0 +1,95 @@
+/*
+ // Copyright (c) 2021-2025 Timothy Schoen
+ // For information on usage and redistribution, and for a DISCLAIMER OF ALL
+ // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
+ */
+
+#pragma once
+
+#include <string>
+#include "Containers.h"
+#include "Hash.h"
+
+#if JUCE_IOS
+#    define ONLY_MENU_ITEM_DEF 1
+#    include "Components/TouchPopupMenu.h"
+#    undef ONLY_MENU_ITEM_DEF
+#endif
+
+namespace juce {
+class ComponentPeer;
+}
+
+struct OSUtils {
+    enum KeyboardLayout {
+        QWERTY,
+        AZERTY
+        /* QWERTZ */
+    };
+
+    static unsigned int keycodeToHID(unsigned int scancode);
+    static void* getDesktopParentPeer(juce::Component* component);
+
+#if defined(_WIN32) || defined(_WIN64)
+    static bool createJunction(std::string from, std::string to);
+    static bool createHardLink(std::string from, std::string to);
+    static bool runAsAdmin(std::string file, std::string lpParameters, juce::ComponentPeer* peer);
+    static void useWindowsNativeDecorations(juce::ComponentPeer* peer, bool rounded);
+#elif defined(__unix__) && !defined(__APPLE__)
+    static void maximiseLinuxWindow(juce::ComponentPeer* peer, bool shouldBeMaximised);
+    static bool isLinuxWindowMaximised(juce::ComponentPeer* peer);
+    static void updateLinuxWindowConstraints(juce::ComponentPeer* peer);
+#elif JUCE_MAC
+    static void setWindowMovable(juce::ComponentPeer* peer, bool canMove);
+    static void enableInsetTitlebarButtons(juce::ComponentPeer* peer, bool enabled);
+    static void hideTitlebarButtons(juce::ComponentPeer* peer, bool hideMinimiseButton, bool hideMaximiseButton, bool hideCloseButton);
+#endif
+
+    static SmallArray<juce::File> iterateDirectory(juce::File const& directory, bool recursive, bool onlyFiles, int maximum = -1);
+    static bool isDirectoryFast(juce::String const& path);
+    static bool isFileFast(juce::String const& path);
+    static hash32 getUniqueFileHash(juce::String const& path);
+    static bool moveFileTo(juce::File const& target, juce::File const& destination);
+
+    static KeyboardLayout getKeyboardLayout();
+
+    static bool is24HourTimeFormat();
+    static bool isFileQuarantined(juce::File const& file);
+    static void removeFromQuarantine(juce::File const& file);
+
+#if JUCE_MAC || JUCE_IOS
+    static float MTLGetPixelScale(void* view);
+    static void* MTLCreateView(void* parent, int x, int y, int width, int height);
+    static void MTLDeleteView(void* view);
+    static void MTLSetVisible(void* view, bool shouldBeVisible);
+#endif
+#if JUCE_MAC
+    class ScrollTracker {
+    public:
+        ScrollTracker();
+
+        ~ScrollTracker();
+
+        static std::unique_ptr<ScrollTracker> create()
+        {
+            return std::make_unique<ScrollTracker>();
+        }
+
+        static bool isPerformingGesture()
+        {
+            return instance->gesturing;
+        }
+
+    private:
+        bool gesturing = false;
+        void* observer;
+        static inline std::unique_ptr<ScrollTracker> instance = create();
+    };
+#elif JUCE_IOS
+    static juce::BorderSize<int> getSafeAreaInsets();
+    static bool isIPad();
+    static float getScreenCornerRadius();
+    static bool addOpenURLMethodToDelegate();
+    static void showiOSNativeMenu(juce::ComponentPeer* peer, juce::String const& title, SmallArray<TouchPopupMenuItem> const& items, SmallArray<SmallArray<TouchPopupMenuItem>> const& sub, juce::Point<int> screenPosition);
+#endif
+};

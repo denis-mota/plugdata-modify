@@ -1,0 +1,20 @@
+workflow_main:
+    steps:
+    - trigger_services:
+        project: home:plugdata
+        package: plugdata
+    - filters:
+        event: push
+        branches:
+          only:
+            - main
+workflow_develop:
+    steps:
+    - trigger_services:
+        project: home:plugdata
+        package: plugdata-current
+    - filters:
+        event: push
+        branches:
+          only:
+            - develop

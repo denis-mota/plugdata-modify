@@ -1,0 +1,180 @@
+/*
+ // Copyright (c) 2022 Timothy Schoen and Wasted Audio
+ // For information on usage and redistribution, and for a DISCLAIMER OF ALL
+ // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
+ */
+#pragma once
+
+class PdExporter final : public ExporterBase {
+public:
+    Value exportTypeValue = Value(var(2));
+    Value copyToPath = Value(var(0));
+
+    PropertiesPanel::BoolComponent* copyToPathProperty;
+
+    PdExporter(PluginEditor* editor, ExportingProgressView* exportingView)
+        : ExporterBase(editor, exportingView)
+    {
+        PropertiesArray properties;
+        properties.add(new PropertiesPanel::ComboComponent("Export type", exportTypeValue, { "Source code", "Binary" }));
+
+        copyToPathProperty = new PropertiesPanel::BoolComponent("Copy to externals path", copyToPath, { "No", "Yes" });
+        properties.add(copyToPathProperty);
+
+        panel.addSection("Pd", properties);
+
+        exportTypeValue.addListener(this);
+    }
+
+    void getState(DynamicObject::Ptr globalState) override
+    {
+        auto* state = new DynamicObject();
+        state->setProperty("input_patch_value", getValue<String>(inputPatchValue));
+        state->setProperty("project_name_value", getValue<String>(projectNameValue));
+        state->setProperty("project_copyright_value", getValue<String>(projectCopyrightValue));
+        state->setProperty("export_type_value", getValue<int>(exportTypeValue));
+        state->setProperty("copy_to_path", getValue<int>(copyToPath));
+        globalState->setProperty("pdext", state);
+    }
+
+    void setState(DynamicObject::Ptr globalState) override
+    {
+        auto const state = globalState->getProperty("pdext").getDynamicObject();
+        if (!state)
+            return;
+        inputPatchValue = state->getProperty("input_patch_value");
+        projectNameValue = state->getProperty("project_name_value");
+        projectCopyrightValue = state->getProperty("project_copyright_value");
+        exportTypeValue = state->getProperty("export_type_value");
+        copyToPath = state->getProperty("copy_to_path");
+    }
+
+    void valueChanged(Value& v) override
+    {
+        if (v.refersToSameSourceAs(exportTypeValue)) {
+            copyToPathProperty->setEnabled(exportTypeValue == 2);
+            if (exportTypeValue == 1) {
+                copyToPath = 0;
+            }
+        } else {
+            ExporterBase::valueChanged(v);
+        }
+    }
+
+    bool performExport(String const& pdPatch, String const& outdir, String const& name, String const& copyright, StringArray const& searchPaths) override
+    {
+        exportingView->showState(ExportingProgressView::Exporting);
+
+        auto const heavyPath = pathToString(heavyExecutable);
+        StringArray args = { heavyPath.quoted(), pdPatch.quoted(), "-o", outdir.quoted() };
+
+        args.add("-n" + name);
+
+        if (copyright.isNotEmpty()) {
+            args.add("--copyright");
+            args.add(copyright.quoted());
+        }
+
+        args.add("-v");
+        args.add("-gpdext");
+
+        args.add("-p");
+        for (auto& path : searchPaths) {
+            args.add(path);
+        }
+
+        if (shouldQuit)
+            return true;
+
+        auto const command = args.joinIntoString(" ");
+        startShellScript(command);
+
+        waitForProcessToFinish(-1);
+        exportingView->flushConsole();
+
+        if (shouldQuit)
+            return true;
+
+        auto outputFile = File(outdir);
+        outputFile.getChildFile("ir").deleteRecursively();
+        outputFile.getChildFile("hv").deleteRecursively();
+
+        // Delay to get correct exit code
+        Time::waitForMillisecondCounter(Time::getMillisecondCounter() + 300);
+
+        bool const generationExitCode = getExitCode();
+        // Check if we need to compile
+        if (!generationExitCode && getValue<int>(exportTypeValue) == 2) {
+            auto const workingDir = File::getCurrentWorkingDirectory();
+
+            outputFile.setAsCurrentWorkingDirectory();
+
+            auto const bin = toolchainDir.getChildFile("bin");
+            auto make = bin.getChildFile("make" + exeSuffix);
+            auto makefile = outputFile.getChildFile("Makefile");
+
+#if JUCE_MAC
+            startShellScript("make -j4 suppress-wunused=1");
+#elif JUCE_WINDOWS
+            File pdDll;
+            if (ProjectInfo::isStandalone) {
+                pdDll = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory();
+            } else {
+                pdDll = File::getSpecialLocation(File::globalApplicationsDirectory).getChildFile("plugdata");
+            }
+
+            auto path = "export PATH=\"$PATH:" + pathToString(toolchainDir.getChildFile("bin")) + "\"\n";
+            auto cc = "CC=" + pathToString(toolchainDir.getChildFile("bin").getChildFile("gcc.exe")) + " ";
+            auto cxx = "CXX=" + pathToString(toolchainDir.getChildFile("bin").getChildFile("g++.exe")) + " ";
+            auto pdbindir = "PDBINDIR=\"" + pathToString(pdDll) + "\" ";
+            auto shell = " SHELL=" + pathToString(toolchainDir.getChildFile("bin").getChildFile("bash.exe")).quoted();
+
+            startShellScript(path + cc + cxx + pdbindir + pathToString(make) + " -j4 suppress-wunused=1" + shell);
+
+#else // Linux or BSD
+            auto prepareEnvironmentScript = toolchainDir.getChildFile("scripts").getChildFile("anywhere-setup.sh").getFullPathName() + "\n";
+
+            auto buildScript = prepareEnvironmentScript
+                + make.getFullPathName()
+                + " -j4 suppress-wunused=1";
+
+            startShellScript(buildScript);
+#endif
+
+            waitForProcessToFinish(-1);
+            exportingView->flushConsole();
+
+            // Delay to get correct exit code
+            Time::waitForMillisecondCounter(Time::getMillisecondCounter() + 300);
+
+            workingDir.setAsCurrentWorkingDirectory();
+
+#if JUCE_MAC
+            auto external = outputFile.getChildFile(name + "~.pd_darwin");
+#elif JUCE_WINDOWS
+            auto external = outputFile.getChildFile(name + "~.dll");
+#else
+            auto external = outputFile.getChildFile(name + "~.pd_linux");
+#endif
+
+            if (getValue<bool>(copyToPath)) {
+                exportingView->logToConsole("Copying to Externals folder...\n");
+                auto const copy_location = ProjectInfo::appDataDir.getChildFile("Externals").getChildFile(external.getFileName());
+                external.copyFileTo(copy_location.getFullPathName());
+                copy_location.setExecutePermission(1);
+            }
+
+            // Clean up
+            outputFile.getChildFile("c").deleteRecursively();
+            outputFile.getChildFile("pdext").deleteRecursively();
+            outputFile.getChildFile("Makefile").deleteFile();
+            outputFile.getChildFile("Makefile.pdlibbuilder").deleteFile();
+
+            bool const compilationExitCode = getExitCode();
+
+            return compilationExitCode;
+        }
+
+        return generationExitCode;
+    }
+};

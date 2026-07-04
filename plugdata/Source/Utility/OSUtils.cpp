@@ -1,0 +1,660 @@
+/*
+ // Copyright (c) 2021-2025 Timothy Schoen
+ // For information on usage and redistribution, and for a DISCLAIMER OF ALL
+ // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
+ */
+
+#define JUCE_GUI_BASICS_INCLUDE_XHEADERS 1
+#include <juce_gui_basics/juce_gui_basics.h>
+#include <juce_audio_processors/juce_audio_processors.h>
+
+#include "OSUtils.h"
+#include "Config.h"
+
+#if !defined(__APPLE__)
+#    undef JUCE_GUI_BASICS_INCLUDE_XHEADERS
+#    include <raw_keyboard_input/raw_keyboard_input.cpp>
+#else
+#    include <sys/xattr.h>
+#endif
+
+#if (defined(__cpp_lib_filesystem) || __has_include(<filesystem>)) && (!defined(__APPLE__) || __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 101500)
+#    include <filesystem>
+namespace fs = std::filesystem;
+#elif defined(__cpp_lib_experimental_filesystem)
+#    include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#    include <ghc_filesystem/include/ghc/filesystem.hpp>
+namespace fs = ghc::filesystem;
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+
+#    define REPARSE_MOUNTPOINT_HEADER_SIZE 8
+#    define WIN32_LEAN_AND_MEAN
+#    define WIN32_NO_STATUS
+
+#    include <windows.h>
+#    include <WINIOCTL.H>
+#    include <shlobj.h>
+#    include <ShellAPI.h>
+
+#    include <stdio.h>
+#    include <filesystem>
+
+bool OSUtils::createJunction(std::string from, std::string to)
+{
+    auto const linkPath = std::wstring(juce::String::fromUTF8(from.c_str(), static_cast<int>(from.size())).toWideCharPointer());
+    auto const targetPath = std::wstring(juce::String::fromUTF8(to.c_str(), static_cast<int>(to.size())).toWideCharPointer());
+    if (linkPath.empty() || targetPath.empty())
+        return false;
+
+    auto const requiredLength = GetFullPathNameW(targetPath.c_str(), 0, nullptr, nullptr);
+    if (requiredLength == 0)
+        return false;
+
+    std::wstring absTarget(requiredLength, L'\0');
+    auto const length = GetFullPathNameW(targetPath.c_str(), requiredLength, absTarget.data(), nullptr);
+    if (length == 0 || length >= requiredLength)
+        return false;
+
+    absTarget.resize(length);
+
+    auto substName = std::wstring();
+    if (absTarget.compare(0, 8, L"\\\\?\\UNC\\") == 0) {
+        substName = L"\\??\\UNC\\" + absTarget.substr(8);
+    } else if (absTarget.compare(0, 4, L"\\\\?\\") == 0) {
+        substName = L"\\??\\" + absTarget.substr(4);
+    } else if (absTarget.compare(0, 2, L"\\\\") == 0) {
+        substName = L"\\??\\UNC\\" + absTarget.substr(2);
+    } else {
+        substName = L"\\??\\" + absTarget;
+    }
+
+    auto const printName = absTarget;
+
+    auto createdDirectory = false;
+    if (!CreateDirectoryW(linkPath.c_str(), nullptr)) {
+        if (GetLastError() != ERROR_ALREADY_EXISTS)
+            return false;
+    } else {
+        createdDirectory = true;
+    }
+
+    auto* hDir = CreateFileW(linkPath.c_str(), GENERIC_WRITE, 0, nullptr,
+        OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+    if (hDir == INVALID_HANDLE_VALUE) {
+        if (createdDirectory)
+            RemoveDirectoryW(linkPath.c_str());
+        return false;
+    }
+
+    auto const substBytes = substName.size() * sizeof(wchar_t);
+    auto const printBytes = printName.size() * sizeof(wchar_t);
+    auto const pathBufferBytes = substBytes + sizeof(wchar_t) + printBytes + sizeof(wchar_t);
+    auto const reparseDataBytes = 8 + pathBufferBytes;
+
+    if (substBytes > 0xffff || printBytes > 0xffff || pathBufferBytes > 0xffff || reparseDataBytes > 0xffff) {
+        CloseHandle(hDir);
+        if (createdDirectory)
+            RemoveDirectoryW(linkPath.c_str());
+        return false;
+    }
+
+    auto const reparseDataLength = static_cast<USHORT>(reparseDataBytes);
+    auto const totalBytes = static_cast<DWORD>(REPARSE_MOUNTPOINT_HEADER_SIZE + reparseDataLength);
+
+    std::vector<BYTE> buf(totalBytes, 0);
+    auto* const buffer = buf.data();
+
+    *reinterpret_cast<ULONG*>(buffer + 0) = IO_REPARSE_TAG_MOUNT_POINT;
+    *reinterpret_cast<USHORT*>(buffer + 4) = reparseDataLength;
+    *reinterpret_cast<USHORT*>(buffer + 6) = 0;
+    *reinterpret_cast<USHORT*>(buffer + 8) = 0;
+    *reinterpret_cast<USHORT*>(buffer + 10) = static_cast<USHORT>(substBytes);
+    *reinterpret_cast<USHORT*>(buffer + 12) = static_cast<USHORT>(substBytes + sizeof(wchar_t));
+    *reinterpret_cast<USHORT*>(buffer + 14) = static_cast<USHORT>(printBytes);
+
+    auto* const pathBuffer = reinterpret_cast<wchar_t*>(buffer + 16);
+    memcpy(pathBuffer, substName.data(), substBytes);
+    pathBuffer[substName.size()] = L'\0';
+    memcpy(pathBuffer + substName.size() + 1, printName.data(), printBytes);
+    pathBuffer[substName.size() + 1 + printName.size()] = L'\0';
+
+    DWORD dwRet = 0;
+    BOOL ok = DeviceIoControl(hDir, FSCTL_SET_REPARSE_POINT,
+        buf.data(), totalBytes,
+        nullptr, 0, &dwRet, nullptr);
+    CloseHandle(hDir);
+
+    if (!ok) {
+        if (createdDirectory)
+            RemoveDirectoryW(linkPath.c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool OSUtils::createHardLink(std::string from, std::string to)
+{
+    try {
+        fs::create_hard_link(from, to);
+    } catch (...) {
+        return false;
+    }
+    return true;
+}
+
+// Function to run a command as admin on Windows
+// It should spawn a dialog, asking for permissions
+bool OSUtils::runAsAdmin(std::string command, std::string parameters, juce::ComponentPeer* peer)
+{
+
+    HWND hWnd = (HWND)peer->getNativeHandle();
+    auto lpFile = (LPCTSTR)command.c_str();
+    auto lpParameters = (LPCTSTR)parameters.c_str();
+
+    BOOL retval;
+    SHELLEXECUTEINFO sei;
+    ZeroMemory(&sei, sizeof(sei));
+
+    sei.cbSize = sizeof(SHELLEXECUTEINFO);
+    sei.hwnd = hWnd;
+    sei.fMask = SEE_MASK_NOASYNC | SEE_MASK_NO_CONSOLE;
+    sei.lpVerb = TEXT("runas");
+    sei.lpFile = lpFile;
+    sei.lpParameters = lpParameters;
+    sei.nShow = SW_SHOWNORMAL;
+    retval = ShellExecuteEx(&sei);
+
+    return (bool)retval;
+}
+
+void OSUtils::useWindowsNativeDecorations(juce::ComponentPeer* peer, bool rounded)
+{
+    if (auto hDwmApi = LoadLibrary("dwmapi.dll"); hDwmApi) {
+        typedef HRESULT(WINAPI * PFNSETWINDOWATTRIBUTE)(HWND hWnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+
+        if (auto pfnSetWindowAttribute = reinterpret_cast<PFNSETWINDOWATTRIBUTE>(GetProcAddress(hDwmApi, "DwmSetWindowAttribute")); pfnSetWindowAttribute) {
+            enum : DWORD {
+                DWMWA_WINDOW_CORNER_PREFERENCE = 33,
+
+                DWMWCP_DEFAULT = 0,
+                DWMWCP_DONOTROUND,
+                DWMWCP_ROUND,
+            };
+
+            // Set corners to rounded
+            auto preference = rounded ? DWMWCP_ROUND : DWMWCP_DONOTROUND;
+            pfnSetWindowAttribute((HWND)peer->getNativeHandle(), DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(preference));
+        }
+        FreeLibrary(hDwmApi);
+    }
+}
+
+OSUtils::KeyboardLayout OSUtils::getKeyboardLayout()
+{
+    CHAR layoutName[KL_NAMELENGTH];
+
+    if (GetKeyboardLayoutNameA(layoutName)) {
+        // Check for specific layout names to differentiate between French and Belgian layouts.
+        if (strcmp(layoutName, "0000040C") == 0 || strcmp(layoutName, "0000080C") == 0) // French or Belgian French
+        {
+            return OSUtils::AZERTY;
+        } else if (strcmp(layoutName, "00000813") == 0) // Belgian Dutch
+        {
+            return OSUtils::AZERTY;
+        }
+    }
+
+    // Default to QWERTY if it's not AZERTY
+    return OSUtils::QWERTY;
+}
+
+#endif // Windows
+
+// Selects Linux and BSD
+#if defined(__unix__) && !defined(__APPLE__)
+
+void OSUtils::updateLinuxWindowConstraints(juce::ComponentPeer* peer)
+{
+#    if JUCE_WAYLAND
+    if (WaylandWindowSystem::getInstance()->isWaylandAvailable()) {
+        return;
+    }
+#    endif
+    juce::XWindowSystem::getInstance()->updateConstraints(reinterpret_cast<::Window>(peer->getNativeHandle()));
+}
+
+bool OSUtils::isLinuxWindowMaximised(ComponentPeer* peer)
+{
+#    if JUCE_WAYLAND
+    if (WaylandWindowSystem::getInstance()->isWaylandAvailable()) {
+        return peer->isFullScreen();
+    }
+#    endif
+    enum window_state_t {
+        WINDOW_STATE_NONE = 0,
+        WINDOW_STATE_MODAL = (1 << 0),
+        WINDOW_STATE_STICKY = (1 << 1),
+        WINDOW_STATE_MAXIMIZED_VERT = (1 << 2),
+        WINDOW_STATE_MAXIMIZED_HORZ = (1 << 3),
+        WINDOW_STATE_MAXIMIZED = (WINDOW_STATE_MAXIMIZED_VERT | WINDOW_STATE_MAXIMIZED_HORZ),
+        WINDOW_STATE_SHADED = (1 << 4),
+        WINDOW_STATE_SKIP_TASKBAR = (1 << 5),
+        WINDOW_STATE_SKIP_PAGER = (1 << 6),
+        WINDOW_STATE_HIDDEN = (1 << 7),
+        WINDOW_STATE_FULLSCREEN = (1 << 8),
+        WINDOW_STATE_ABOVE = (1 << 9),
+        WINDOW_STATE_BELOW = (1 << 10),
+        WINDOW_STATE_DEMANDS_ATTENTION = (1 << 11),
+        WINDOW_STATE_FOCUSED = (1 << 12),
+        WINDOW_STATE_SIZE = 13,
+    };
+
+    /* state names */
+    static char const* WINDOW_STATE_NAMES[] = {
+        "_NET_WM_STATE_MODAL",
+        "_NET_WM_STATE_STICKY",
+        "_NET_WM_STATE_MAXIMIZED_VERT",
+        "_NET_WM_STATE_MAXIMIZED_HORZ",
+        "_NET_WM_STATE_SHADED",
+        "_NET_WM_STATE_SKIP_TASKBAR",
+        "_NET_WM_STATE_SKIP_PAGER",
+        "_NET_WM_STATE_HIDDEN",
+        "_NET_WM_STATE_FULLSCREEN",
+        "_NET_WM_STATE_ABOVE",
+        "_NET_WM_STATE_BELOW",
+        "_NET_WM_STATE_DEMANDS_ATTENTION",
+        "_NET_WM_STATE_FOCUSED"
+    };
+
+    auto* display = juce::XWindowSystem::getInstance()->getDisplay();
+
+    juce::XWindowSystemUtilities::ScopedXLock xLock;
+
+    Atom net_wm_state;
+    Atom net_wm_states[WINDOW_STATE_SIZE];
+
+    auto window = (Window)peer->getNativeHandle();
+
+    if (!display)
+        return false;
+
+    net_wm_state = XInternAtom(display, "_NET_WM_STATE", False);
+
+    for (int i = 0; i < WINDOW_STATE_SIZE; i++) {
+        net_wm_states[i] = XInternAtom(display, WINDOW_STATE_NAMES[i], False);
+    }
+
+    long max_length = 1024;
+    Atom actual_type;
+    int actual_format;
+    unsigned long bytes_after, i, num_states = 0;
+    Atom* states = nullptr;
+    window_state_t state = WINDOW_STATE_NONE;
+
+    if (XGetWindowProperty(display, window, net_wm_state, 0l, max_length, False, 4,
+            &actual_type, &actual_format, &num_states, &bytes_after, (unsigned char**)&states)
+        == Success) {
+
+        // for every state we get from the server
+        for (i = 0; i < num_states; ++i) {
+            // for every (known) state
+            for (int n = 0; n < WINDOW_STATE_SIZE; ++n) {
+                // test the state at index i
+                if (states[i] == net_wm_states[n]) {
+                    state = static_cast<window_state_t>(static_cast<int>(state) | (1 << n));
+                    break;
+                }
+            }
+        }
+        XFree(states);
+    }
+
+    return (state & WINDOW_STATE_MAXIMIZED) != 0;
+}
+
+void OSUtils::maximiseLinuxWindow(ComponentPeer* peer, bool shouldBeMaximised)
+{
+#    if JUCE_WAYLAND
+    if (WaylandWindowSystem::getInstance()->isWaylandAvailable()) {
+        peer->setFullScreen(shouldBeMaximised);
+        return;
+    }
+#    endif
+    juce::XWindowSystem::getInstance()->setMaximised((::Window)peer->getNativeHandle(), shouldBeMaximised);
+}
+
+OSUtils::KeyboardLayout OSUtils::getKeyboardLayout()
+{
+    char* line = NULL;
+    size_t size = 0;
+    KeyboardLayout result = QWERTY;
+    FILE* in;
+
+    in = popen("LANG=C LC_ALL=C setxkbmap -print", "rb");
+    if (!in)
+        return QWERTY;
+
+    while (1) {
+        getline(&line, &size, in);
+        if (strstr(line, "aliases(qwerty)"))
+            result = QWERTY;
+        if (strstr(line, "aliases(azerty)"))
+            result = AZERTY;
+    }
+
+    free(line);
+    pclose(in);
+
+    return result;
+}
+#endif // Linux/BSD
+
+bool OSUtils::isDirectoryFast(juce::String const& path)
+{
+    std::error_code ec;
+#ifdef _WIN32
+    bool result = fs::is_directory(std::wstring(path.toWideCharPointer()), ec);
+#else
+    bool result = fs::is_directory(std::string(path.toRawUTF8()), ec);
+#endif
+    return result;
+}
+
+bool OSUtils::isFileFast(juce::String const& path)
+{
+    std::error_code ec;
+#ifdef _WIN32
+    return fs::is_regular_file(std::wstring(path.toWideCharPointer()), ec);
+#else
+    return fs::is_regular_file(std::string(path.toRawUTF8()), ec);
+#endif
+}
+
+hash32 OSUtils::getUniqueFileHash(juce::String const& path)
+{
+    std::error_code ec;
+#ifdef _WIN32
+    auto canonicalPath = fs::canonical(std::wstring(path.toWideCharPointer()), ec);
+#else
+    auto canonicalPath = fs::canonical(std::string(path.toRawUTF8()), ec);
+#endif
+    if (ec) {
+        jassertfalse;
+        std::cerr << "fs hash error: " + juce::String(ec.message()) << std::endl;
+        return 0;
+    }
+
+    return hash(canonicalPath.c_str());
+}
+
+inline fs::directory_iterator dirIterFromJuceFile(juce::File const& file)
+{
+    std::error_code ec;
+#ifdef _WIN32
+    fs::directory_iterator it(std::wstring(file.getFullPathName().toWideCharPointer()), ec);
+#else
+    fs::directory_iterator it(std::string(file.getFullPathName().toRawUTF8()), ec);
+#endif
+    if (ec) {
+        jassertfalse;
+        std::cerr << "fs iter error: " + juce::String(ec.message()) << std::endl;
+    }
+    return it;
+}
+
+inline fs::recursive_directory_iterator recursiveDirIterFromJuceFile(juce::File const& file)
+{
+    std::error_code ec;
+#ifdef _WIN32
+    fs::recursive_directory_iterator it(std::wstring(file.getFullPathName().toWideCharPointer()), ec);
+#else
+    fs::recursive_directory_iterator it(std::string(file.getFullPathName().toRawUTF8()), ec);
+#endif
+    if (ec) {
+        jassertfalse;
+        std::cerr << "fs recursive iter error: " + juce::String(ec.message()) << std::endl;
+    }
+    return it;
+}
+
+SmallArray<fs::path> iterateDirectoryPaths(juce::File const& directory, bool const recursive, bool const onlyFiles, int const maximum)
+{
+    SmallArray<fs::path> result;
+
+    if (recursive) {
+        try {
+            for (auto const& dirEntry : recursiveDirIterFromJuceFile(directory)) {
+                auto const isDir = dirEntry.is_directory();
+                if ((isDir && !onlyFiles) || !isDir) {
+                    result.add(dirEntry.path().string());
+                }
+
+                if (maximum > 0 && result.size() >= maximum)
+                    break;
+            }
+        } catch (fs::filesystem_error& e) {
+            std::cerr << "Error while iterating over directory: " << e.path1() << std::endl;
+        }
+    } else {
+        try {
+            for (auto const& dirEntry : dirIterFromJuceFile(directory)) {
+                auto const isDir = dirEntry.is_directory();
+                if ((isDir && !onlyFiles) || !isDir) {
+                    result.add(dirEntry.path());
+                }
+
+                if (maximum > 0 && result.size() >= maximum)
+                    break;
+            }
+        } catch (fs::filesystem_error& e) {
+            std::cerr << "Error while iterating over directory: " << e.path1() << std::endl;
+        }
+    }
+
+    return result;
+}
+
+SmallArray<juce::File> OSUtils::iterateDirectory(juce::File const& directory, bool const recursive, bool const onlyFiles, int const maximum)
+{
+    auto paths = iterateDirectoryPaths(directory, recursive, onlyFiles, maximum);
+    auto files = SmallArray<juce::File>();
+    for (auto& path : paths) {
+        files.add(juce::File(path.string()));
+    }
+
+    return files;
+}
+
+bool OSUtils::moveFileTo(juce::File const& target, juce::File const& destination)
+{
+#ifdef _WIN32
+    auto targetPath = std::wstring(target.getFullPathName().toWideCharPointer());
+    auto destinationPath = std::wstring(destination.getFullPathName().toWideCharPointer());
+#else
+    auto targetPath = target.getFullPathName().toStdString();
+    auto destinationPath = destination.getFullPathName().toStdString();
+#endif
+
+    std::error_code ec;
+    fs::rename(targetPath, destinationPath, ec);
+    if (!ec)
+        return true;
+
+    fs::copy(targetPath, destinationPath,
+        fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
+    if (ec)
+        return false;
+
+    fs::remove_all(targetPath, ec);
+    if (ec) {
+        // source couldn't be removed; optionally clean up destination
+        std::error_code ignored;
+        fs::remove_all(destinationPath, ignored);
+        return false;
+    }
+
+    return true;
+}
+
+// needs to be in OSutils because it needs <windows.h>
+unsigned int OSUtils::keycodeToHID(unsigned int scancode)
+{
+
+#if defined(_WIN32)
+    static unsigned char const KEYCODE_TO_HID[256] = {
+        0, 41, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 45, 46, 42, 43, 20, 26, 8, 21, 23, 28, 24, 12, 18, 19,
+        47, 48, 158, 224, 4, 22, 7, 9, 10, 11, 13, 14, 15, 51, 52, 53, 225, 49, 29, 27, 6, 25, 5, 17, 16, 54,
+        55, 56, 229, 0, 226, 0, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 72, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 68, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 228, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 70, 230, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 74, 82, 75, 0, 80, 0, 79, 0, 77, 81, 78, 73, 76, 0, 0, 0, 0, 0, 0, 0, 227, 231,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+    static HKL layout;
+
+    scancode = MapVirtualKeyEx(scancode, MAPVK_VK_TO_VSC, layout);
+    if (scancode >= 256)
+        return (0);
+    return (KEYCODE_TO_HID[scancode]);
+
+#elif defined(__APPLE__)
+    static unsigned char const KEYCODE_TO_HID[128] = {
+        4, 22, 7, 9, 11, 10, 29, 27, 6, 25, 0, 5, 20, 26, 8, 21, 28, 23, 30, 31, 32, 33, 35, 34, 46, 38, 36,
+        45, 37, 39, 48, 18, 24, 47, 12, 19, 158, 15, 13, 52, 14, 51, 49, 54, 56, 17, 16, 55, 43, 44, 53, 42,
+        0, 41, 231, 227, 225, 57, 226, 224, 229, 230, 228, 0, 108, 220, 0, 85, 0, 87, 0, 216, 0, 0, 127,
+        84, 88, 0, 86, 109, 110, 103, 98, 89, 90, 91, 92, 93, 94, 95, 111, 96, 97, 0, 0, 0, 62, 63, 64, 60,
+        65, 66, 0, 68, 0, 104, 107, 105, 0, 67, 0, 69, 0, 106, 117, 74, 75, 76, 61, 77, 59, 78, 58, 80, 79,
+        81, 82, 0
+    };
+
+    if (scancode >= 128)
+        return 0;
+    return KEYCODE_TO_HID[scancode];
+#else
+
+    static unsigned char const KEYCODE_TO_HID[256] = {
+        0, 41, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 45, 46, 42, 43, 20, 26, 8, 21, 23, 28, 24, 12, 18, 19,
+        47, 48, 158, 224, 4, 22, 7, 9, 10, 11, 13, 14, 15, 51, 52, 53, 225, 49, 29, 27, 6, 25, 5, 17, 16, 54,
+        55, 56, 229, 85, 226, 44, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 83, 71, 95, 96, 97, 86, 92,
+        93, 94, 87, 89, 90, 91, 98, 99, 0, 0, 100, 68, 69, 0, 0, 0, 0, 0, 0, 0, 88, 228, 84, 154, 230, 0, 74,
+        82, 75, 80, 79, 77, 81, 78, 73, 76, 0, 0, 0, 0, 0, 103, 0, 72, 0, 0, 0, 0, 0, 227, 231, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 118, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+    // xorg differs from kernel values
+    scancode -= 8;
+    if (scancode >= 256)
+        return 0;
+    return KEYCODE_TO_HID[scancode];
+#endif
+}
+
+void* OSUtils::getDesktopParentPeer(Component* component)
+{
+    // On iOS AUv3 plugins, all dialogs need to have a parent window specified
+#if JUCE_IOS
+    if (!component || ProjectInfo::isStandalone)
+        return nullptr;
+
+    if (auto* peer = component->getPeer())
+        return peer->getNativeHandle();
+#elif JUCE_LINUX || JUCE_BSD
+#    if JUCE_WAYLAND
+    if (WaylandWindowSystem::getInstance()->isWaylandAvailable() && dynamic_cast<AudioProcessorEditor*>(component))
+        if (auto* peer = component->getPeer())
+            return WaylandWindowSystem::getInstance()->getWaylandWindowForPeer(peer);
+#    endif
+#endif
+    return nullptr;
+}
+
+bool OSUtils::is24HourTimeFormat()
+{
+#ifdef JUCE_WINDOWS
+    wchar_t longTimeFormat[100];
+    wchar_t shortTimeFormat[100];
+    int longTime = GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_STIMEFORMAT, longTimeFormat, 100);
+    int shortTime = GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SSHORTTIME, shortTimeFormat, 100);
+    bool longTimeIs24Hour = false;
+    bool shortTimeIs24Hour = false;
+
+    if (longTime <= 0 || shortTime <= 0) {
+        return false; // Default to 12-hour format in case of error
+    }
+
+    if (longTime > 0) {
+        // Check if the format string contains 'H' (24-hour) or 'h' (12-hour)
+        longTimeIs24Hour = wcschr(longTimeFormat, L'H') != nullptr;
+    }
+    if (shortTime > 0) {
+        // Check if the format string contains 'H' (24-hour) or 'h' (12-hour)
+        shortTimeIs24Hour = wcschr(shortTimeFormat, L'H') != nullptr;
+    }
+    // Both time settings have to be 24 hour, so if either is in 12, we use 12.
+    return longTimeIs24Hour && shortTimeIs24Hour;
+#else
+    StackArray<char, 100> buffer;
+    std::time_t const now = std::time(nullptr); // Get the current time
+    std::tm const* localTime = std::localtime(&now);
+
+    // Format the time string using the current locale with %X (locale's time representation)
+    std::strftime(buffer.data(), buffer.size(), "%X", localTime);
+
+    // Check for "AM" or "PM" in the formatted time
+    char const* formattedTime = buffer.data();
+    return std::strstr(formattedTime, "AM") == nullptr && std::strstr(formattedTime, "PM") == nullptr;
+#endif
+}
+
+bool OSUtils::isFileQuarantined(juce::File const& file)
+{
+#if JUCE_MAC
+    char const* attrName = "com.apple.quarantine";
+    char const* path = file.getFullPathName().toRawUTF8();
+    ssize_t result = getxattr(path, attrName, nullptr, 0, 0, 0);
+    return result != -1;
+#elif JUCE_WINDOWS
+    auto const adsPath = file.getFullPathName() + ":Zone.Identifier";
+    HANDLE h = CreateFileW(adsPath.toWideCharPointer(),
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        nullptr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        nullptr);
+
+    if (h == INVALID_HANDLE_VALUE)
+        return false;
+
+    CloseHandle(h);
+    return true;
+#else
+    // Linux / other platforms: no standard mechanism
+    juce::ignoreUnused(file);
+    return false;
+#endif
+}
+
+void OSUtils::removeFromQuarantine(juce::File const& file)
+{
+#if JUCE_MAC
+    char const* attrName = "com.apple.quarantine";
+    char const* path = file.getFullPathName().toRawUTF8();
+    removexattr(path, attrName, 0);
+#elif JUCE_WINDOWS
+    auto const adsPath = file.getFullPathName() + ":Zone.Identifier";
+    DeleteFileW(adsPath.toWideCharPointer());
+#else
+    juce::ignoreUnused(file);
+#endif
+}

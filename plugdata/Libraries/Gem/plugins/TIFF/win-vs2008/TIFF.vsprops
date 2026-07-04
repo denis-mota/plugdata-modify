@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="TIFF"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="$(LIBTIFF_DIR)\include"
+		PreprocessorDefinitions="HAVE_LIBTIFF"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="libtiff.lib"
+		AdditionalLibraryDirectories="$(LIBTIFF_DIR)\lib"
+	/>
+	<UserMacro
+		Name="LIBTIFF_DIR"
+		Value="C:\dev\tiff-3.8.2-1-lib"
+	/>
+</VisualStudioPropertySheet>

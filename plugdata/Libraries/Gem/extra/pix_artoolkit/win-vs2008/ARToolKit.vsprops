@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="ARToolKit"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(ARTOOLKIT_DIR)\include&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="libAR.lib"
+		AdditionalLibraryDirectories="$(ARTOOLKIT_DIR)\lib"
+	/>
+	<UserMacro
+		Name="ARTOOLKIT_DIR"
+		Value="C:\dev\ARToolKit"
+	/>
+</VisualStudioPropertySheet>
