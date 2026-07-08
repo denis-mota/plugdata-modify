@@ -354,8 +354,8 @@ class PdGUIParser(PdParser):
             font_size=int(line[14]) + 2
         ) if line[10] != "empty" else None
 
-        # optional image_path as extra argument after label_color (index 17)
-        image_path = line[17] if len(line) > 17 and line[17] not in ("empty", "") else None
+        # optional image_path as extra argument after isa_flags (index 18)
+        image_path = line[18] if len(line) > 18 and line[18] not in ("empty", "") else None
 
         return Canvas(
             id=f"canvas{self.object_counter['canvas']}",

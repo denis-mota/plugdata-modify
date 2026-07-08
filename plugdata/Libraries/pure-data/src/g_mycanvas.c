@@ -123,12 +123,13 @@ static void my_canvas_save(t_gobj *z, t_binbuf *b)
     t_symbol *srl[3];
 
     iemgui_save(&x->x_gui, srl, bflcol);
-    binbuf_addv(b, "ssiisiiisssiiiissi", gensym("#X"),gensym("obj"),
+    binbuf_addv(b, "ssiisiiisssiiiissis", gensym("#X"),gensym("obj"),
                 (int)x->x_gui.x_obj.te_xpix, (int)x->x_gui.x_obj.te_ypix,
                 gensym("cnv"), x->x_gui.x_w/IEMGUI_ZOOM(x), x->x_vis_w, x->x_vis_h,
                 srl[0], srl[1], srl[2], x->x_gui.x_ldx, x->x_gui.x_ldy,
                 iem_fstyletoint(&x->x_gui.x_fsf), x->x_gui.x_fontsize,
-                bflcol[0], bflcol[2], iem_symargstoint(&x->x_gui.x_isa));
+                bflcol[0], bflcol[2], iem_symargstoint(&x->x_gui.x_isa),
+                x->x_image ? x->x_image : gensym(""));
     binbuf_addv(b, ";");
 }
 
@@ -256,7 +257,7 @@ static void *my_canvas_new(t_symbol *s, int argc, t_atom *argv)
     x->x_gui.x_fcol = 0x00;
     x->x_gui.x_lcol = 0x404040;
 
-    if(((argc >= 10)&&(argc <= 13))
+    if(((argc >= 10)&&(argc <= 14))
        &&IS_A_FLOAT(argv,0)&&IS_A_FLOAT(argv,1)&&IS_A_FLOAT(argv,2))
     {
         a = atom_getfloatarg(0, argc, argv);
@@ -275,7 +276,7 @@ static void *my_canvas_new(t_symbol *s, int argc, t_atom *argv)
     }
     else iemgui_new_getnames(&x->x_gui, 3, 0);
 
-    if(((argc >= 10)&&(argc <= 13))
+    if(((argc >= 10)&&(argc <= 14))
        &&(IS_A_SYMBOL(argv,i+3)||IS_A_FLOAT(argv,i+3))&&IS_A_FLOAT(argv,i+4)
        &&IS_A_FLOAT(argv,i+5)&&IS_A_FLOAT(argv,i+6)
        &&IS_A_FLOAT(argv,i+7))
@@ -299,10 +300,12 @@ static void *my_canvas_new(t_symbol *s, int argc, t_atom *argv)
         x->x_gui.x_fontsize = fs;
         iemgui_all_loadcolors(&x->x_gui, argv+i+8, 0, argv+i+9);
     }
-    if((argc == 13)&&IS_A_FLOAT(argv,i+10))
+    if((argc >= 13)&&IS_A_FLOAT(argv,i+10))
     {
         iem_inttosymargs(&x->x_gui.x_isa, atom_getfloatarg(i+10, argc, argv));
     }
+    if((argc >= 14)&&IS_A_SYMBOL(argv,13))
+        x->x_image = atom_getsymbolarg(13, argc, argv);
     x->x_gui.x_fsf.x_snd_able = (0 != x->x_gui.x_snd);
     x->x_gui.x_fsf.x_rcv_able = (0 != x->x_gui.x_rcv);
     if(a < 1)

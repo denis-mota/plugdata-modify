@@ -168,7 +168,7 @@ static void toggle_save(t_gobj *z, t_binbuf *b)
     t_symbol *srl[3];
 
     iemgui_save(&x->x_gui, srl, bflcol);
-    binbuf_addv(b, "ssiisiisssiiiisssff", gensym("#X"), gensym("obj"),
+    binbuf_addv(b, "ssiisiisssiiiisssffs", gensym("#X"), gensym("obj"),
                 (int)x->x_gui.x_obj.te_xpix,
                 (int)x->x_gui.x_obj.te_ypix,
                 gensym("tgl"), x->x_gui.x_w/IEMGUI_ZOOM(x),
@@ -178,7 +178,8 @@ static void toggle_save(t_gobj *z, t_binbuf *b)
                 iem_fstyletoint(&x->x_gui.x_fsf), x->x_gui.x_fontsize,
                 bflcol[0], bflcol[1], bflcol[2],
                 x->x_gui.x_isa.x_loadinit?x->x_on:0.f,
-                x->x_nonzero);
+                x->x_nonzero,
+                x->x_image ? x->x_image : gensym(""));
     binbuf_addv(b, ";");
 }
 
@@ -328,7 +329,7 @@ static void *toggle_new(t_symbol *s, int argc, t_atom *argv)
 
     IEMGUI_SETDRAWFUNCTIONS(x, toggle);
 
-    if(((argc == 13)||(argc == 14))&&IS_A_FLOAT(argv,0)
+    if(((argc == 13)||(argc == 14)||(argc == 15))&&IS_A_FLOAT(argv,0)
        &&IS_A_FLOAT(argv,1)
        &&(IS_A_SYMBOL(argv,2)||IS_A_FLOAT(argv,2))
        &&(IS_A_SYMBOL(argv,3)||IS_A_FLOAT(argv,3))
@@ -347,8 +348,10 @@ static void *toggle_new(t_symbol *s, int argc, t_atom *argv)
         on = (t_float)atom_getfloatarg(12, argc, argv);
     }
     else iemgui_new_getnames(&x->x_gui, 2, 0);
-    if((argc == 14)&&IS_A_FLOAT(argv,13))
+    if((argc >= 14)&&IS_A_FLOAT(argv,13))
         nonzero = (t_float)atom_getfloatarg(13, argc, argv);
+    if((argc >= 15)&&IS_A_SYMBOL(argv,14))
+        x->x_image = atom_getsymbolarg(14, argc, argv);
 
     x->x_gui.x_fsf.x_snd_able = (0 != x->x_gui.x_snd);
     x->x_gui.x_fsf.x_rcv_able = (0 != x->x_gui.x_rcv);
