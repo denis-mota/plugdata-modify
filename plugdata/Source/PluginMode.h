@@ -150,7 +150,9 @@ public:
         if (pluginModeLnf) {
             editor->setLookAndFeel(editor->pd->lnf);
             editor->pd->lnf->setTheme(SettingsFile::getInstance()->getTheme(lastTheme));
-            editor->getTopLevelComponent()->sendLookAndFeelChange();
+            // ponytail: defer sendLookAndFeelChange to avoid triggering repaints on semi-destroyed children
+            if (auto* tls = editor->getTopLevelComponent())
+                MessageManager::callAsync([tls] { tls->sendLookAndFeelChange(); });
         }
 
         set_plugdata_debugging_enabled(SettingsFile::getInstance()->getProperty<bool>("debug_connections"));
@@ -237,25 +239,14 @@ public:
 
     void closePluginMode()
     {
-        auto const constrainedNewBounds = windowBounds.withWidth(std::max(windowBounds.getWidth(), 890)).withHeight(std::max(windowBounds.getHeight(), 660));
-        if (auto* mainWindow = dynamic_cast<PlugDataWindow*>(editor->getTopLevelComponent())) {
-            editor->constrainer.setSizeLimits(890, 660, 99000, 99000);
-            mainWindow->getConstrainer()->setSizeLimits(890, 660, 99000, 99000);
-#if JUCE_LINUX || JUCE_BSD
-            OSUtils::updateLinuxWindowConstraints(getPeer());
-#endif
-            auto const correctedPosition = constrainedNewBounds.getTopLeft() - Point<int>(0, nativeTitleBarHeight);
-            mainWindow->setBoundsConstrained(constrainedNewBounds.withPosition(correctedPosition));
-        } else {
-            // For some reason it doesn't work well on macOS unless we change the size twice??
-            editor->setSize(constrainedNewBounds.getWidth() - 1, constrainedNewBounds.getHeight() - 1);
-
-            editor->pluginConstrainer.setSizeLimits(890, 660, 99000, 99000);
-            editor->setBounds(0, 0, constrainedNewBounds.getWidth(), constrainedNewBounds.getHeight());
-        }
-
         cnv->patch.openInPluginMode = false;
-        editor->getTabComponent().updateNow();
+
+        // ponytail: store window bounds for handleAsyncUpdate to apply AFTER canvases are recreated.
+        // On Linux, setBoundsConstrained during empty-canvases state triggers WM_DELETE_WINDOW → quit.
+        auto const constrainedNewBounds = windowBounds.withWidth(std::max(windowBounds.getWidth(), 890)).withHeight(std::max(windowBounds.getHeight(), 660));
+        editor->getTabComponent().setPendingPluginModeResize(constrainedNewBounds);
+
+        editor->getTabComponent().triggerAsyncUpdate();
     }
 
     bool isWindowFullscreen() const

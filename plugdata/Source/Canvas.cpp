@@ -1587,7 +1587,9 @@ void Canvas::deselectAll(bool const broadcastChange)
 
     selectedComponents.deselectAll();
     if (auto* s = editor->getSidebarForPanel(Sidebar::InspectorPanel))
+    {
         s->hideParameters();
+    }
 
     if (!broadcastChange) {
         // Add back the listener, but make sure it's added back 'after' the last event on the message queue

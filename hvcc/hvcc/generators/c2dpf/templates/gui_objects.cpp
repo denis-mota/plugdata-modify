@@ -8,6 +8,13 @@
             {%- if object.label != None %}
     {{object.id}}->setLabel("{{object.label.text}}", nvgRGB{{object.label.color.as_rgb_tuple()}}, {{object.label.position.x}} * scaleFactor, {{object.label.position.y}} * scaleFactor, {{object.label.font_size}} * scaleFactor);
             {%- endif %}
+            {%- if object.id in image_data_map %}
+    {%- set img_data, img_var = image_data_map[object.id] %}
+    static const unsigned char {{object.id}}_img[] = {
+        {{- img_data | join(', ') }}
+    };
+    {{object.id}}->setImageFromMemory({{object.id}}_img, sizeof({{object.id}}_img));
+            {%- endif %}
         {%- elif object.type == 'comment' %}
     // comment
     {{object.id}} = new PDComment({{parent}});
@@ -45,6 +52,13 @@
         nvgRGB{{object.bg_color.as_rgb_tuple()}},
         nvgRGB{{object.fg_color.as_rgb_tuple()}}
     );
+    {%- if object.parameter in image_data_map %}
+    {%- set img_data, img_var = image_data_map[object.parameter] %}
+    static const unsigned char {{object.parameter}}_img[] = {
+        {{- img_data | join(', ') }}
+    };
+    {{object.parameter}}->setImageFromMemory({{object.parameter}}_img, sizeof({{object.parameter}}_img));
+    {%- endif %}
     {{parent}}->addManagedChild({{object.parameter}});
         {%- elif object.type in ['vradio', 'hradio'] %}
     // {{object.type}}
@@ -114,7 +128,6 @@
     {{object.parameter}}->setDrawSquare({{object.square|lower}});
     {{object.parameter}}->setShowTicks({{object.ticks|lower}});
     {{object.parameter}}->setSteps({{object.steps}});
-    {{object.parameter}}->setShowArc({{object.arc_show|lower}});
     {{object.parameter}}->setJumpOnClick({{object.jump|lower}});
     {{object.parameter}}->setDiscrete({{object.discrete|lower}});
     {{object.parameter}}->setUsingLogScale(PDKnobEventHandler::LogMode::{{object.log_mode|upper}});
@@ -126,6 +139,13 @@
         {%- if object.label_size > 0 %}
     {{object.parameter}}->setLabelStyle({{object.label_pos.x}} * scaleFactor, {{object.label_pos.y}} * scaleFactor, {{object.label_size}} * scaleFactor);
     {{object.parameter}}->setShowLabel(LabelShow::{{object.label_show.name|upper}});
+        {%- endif %}
+        {%- if object.parameter in image_data_map %}
+    {%- set img_data, img_var = image_data_map[object.parameter] %}
+    static const unsigned char {{object.parameter}}_img[] = {
+        {{- img_data | join(', ') }}
+    };
+    {{object.parameter}}->setImageFromMemory({{object.parameter}}_img, sizeof({{object.parameter}}_img));
         {%- endif %}
     {{parent}}->addManagedChild({{object.parameter}});
         {%- elif object.type == 'number' %}

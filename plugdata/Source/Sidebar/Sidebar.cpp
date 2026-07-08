@@ -832,12 +832,16 @@ void Sidebar::showParameters(SmallArray<Component*>& objects, SmallArray<ObjectP
 void Sidebar::hideParameters()
 {
     if (inspectorPtr)
+    {
         inspectorPtr->setVisible(false);
+    }
     inspectorHasParameters = false;
     inspectorManuallyShown = false;
 
     if (consolePanelPtr && hasPanel(ConsolePanel))
+    {
         consolePanelPtr->deselect();
+    }
 
     updateCommandInputVisibility();
     updateSelectorButtonStates();

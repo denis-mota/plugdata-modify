@@ -26,6 +26,7 @@ class PDKnob : public PDWidget,
 {
 public:
     explicit PDKnob(NanoSubWidget *parent, PDKnobEventHandler::Callback* cb);
+    ~PDKnob();
 
     void setColors(NVGcolor bgColor, NVGcolor fgColor, NVGcolor arcColor);
     void setLabelStyle(int x, int y, int size);
@@ -37,6 +38,8 @@ public:
     void setShowTicks(bool showTicks);
     void setShowArc(bool showArc);
     void setShowLabel(LabelShow showLabel);
+    void setImageData(const unsigned char* data, uint32_t width, uint32_t height);
+    void setImageFromMemory(const unsigned char* fileData, uint32_t fileSize);
 
 protected:
     bool onMouse(const MouseEvent &ev) override;
@@ -66,6 +69,9 @@ private:
     NanoVG::FontId fFontId;
 
     ScopedPointer<PDLabel> label;
+    int imageHandle = -1;
+    uint32_t imgWidth = 0;
+    uint32_t imgHeight = 0;
 
     DISTRHO_LEAK_DETECTOR(PDKnob)
 };

@@ -277,6 +277,7 @@ struct t_fake_knob {
     char x_tag_sel[32];
     char x_tag_number[32];
     char x_buf[32]; // number buffer
+    t_symbol* x_image; // image path
     t_symbol* x_ignore;
     int x_ignore_int;
     t_symbol* x_bindname;

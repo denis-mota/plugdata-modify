@@ -704,6 +704,7 @@ void TabComponent::updateNow()
 
 void TabComponent::handleAsyncUpdate()
 {
+
     if (canvases.isEmpty() && pd->getEditors().size() > 1) {
         bool editorHasPatches = false;
         for (auto const& patch : pd->patches) {
@@ -851,6 +852,22 @@ void TabComponent::handleAsyncUpdate()
 
     editor->updateCommandStatus();
     sendTabUpdateToVisibleCanvases();
+
+    // ponytail: apply deferred window resize from closePluginMode AFTER canvases exist.
+    // Use Timer::callAfterDelay to run in next message loop iteration,
+    // avoiding X11 WM_DELETE_WINDOW during synchronous setBoundsConstrained.
+    if (!pendingPluginModeResize.isEmpty()) {
+        auto const bounds = pendingPluginModeResize;
+        pendingPluginModeResize = {};
+        Timer::callAfterDelay(50, [editor = editor, bounds] {
+            if (auto* mainWindow = dynamic_cast<PlugDataWindow*>(editor->getTopLevelComponent())) {
+                editor->constrainer.setSizeLimits(890, 660, 99000, 99000);
+                mainWindow->getConstrainer()->setSizeLimits(890, 660, 99000, 99000);
+                mainWindow->setBoundsConstrained(bounds);
+            }
+        });
+    }
+
     repaint();
 }
 
@@ -1109,7 +1126,7 @@ void TabComponent::askToCloseTab(Canvas* cnv)
                     if (!_cnv || !_this)
                         return;
                     if (result == 2)
-                        _cnv->save([_cnv, _this]() mutable { _this->closeTab(_cnv); });
+                        _cnv->save([_cnv, _this]() mutable { if (_cnv && _this) _this->closeTab(_cnv); });
                     else if (result == 1)
                         _this->closeTab(_cnv);
                 },

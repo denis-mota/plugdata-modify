@@ -10,10 +10,14 @@ class ToggleObject final : public ObjectBase {
     bool alreadyToggled = false;
     Value nonZero = SynchronousValue();
     Value sizeProperty = SynchronousValue();
+    Value imageProperty = SynchronousValue();
 
     float value = 0.0f;
 
     IEMHelper iemHelper;
+
+    int imageHandle = -1;
+    MemoryBlock imageData;
 
 public:
     ToggleObject(pd::WeakReference ptr, Object* object)
@@ -22,6 +26,7 @@ public:
     {
         objectParameters.addParamFloat("Non-zero value", cGeneral, &nonZero, 1.0f);
         objectParameters.addParamSize(&sizeProperty, true);
+        objectParameters.addParamString("Image", cAppearance, &imageProperty, "");
 
         iemHelper.addIemParameters(objectParameters, true, true, true, 0, -10);
     }
@@ -66,12 +71,23 @@ public:
         if (auto toggle = ptr.get<t_toggle>()) {
             sizeProperty = toggle->x_gui.x_w;
             nonZero = toggle->x_nonzero;
+            imageProperty = toggle->x_image ? String::fromUTF8(toggle->x_image->s_name) : "";
         }
 
         iemHelper.update();
 
         value = getValue();
         setToggleStateFromFloat(value);
+
+        // Load image directly since updateProperties() suppresses callbacks
+        auto const& imgPath = imageProperty.toString();
+        imageData.reset();
+        // ponytail: don't set imageHandle = -1 here, render() will delete the old GPU texture
+        if (!imgPath.isEmpty()) {
+            File imgFile(imgPath);
+            if (imgFile.existsAsFile())
+                imgFile.loadFileAsData(imageData);
+        }
     }
 
     void render(NVGcontext* nvg) override
@@ -88,21 +104,38 @@ public:
 
         nvgDrawRoundedRect(nvg, b.getX(), b.getY(), b.getWidth(), b.getHeight(), backgroundColour, object->isSelected() ? selectedOutlineColour : outlineColour, Corners::objectCornerRadius);
 
-        auto const sizeReduction = std::min(1.0f, getWidth() / 20.0f);
-        float const margin = (getWidth() * 0.08f + 4.5f) * sizeReduction;
-        auto const crossBounds = getLocalBounds().toFloat().reduced(margin);
+        if (!imageData.isEmpty()) {
+            if (imageHandle >= 0)
+                nvgDeleteImage(nvg, imageHandle);
+            imageHandle = nvgCreateImageMem(nvg, 0, reinterpret_cast<unsigned char*>(imageData.getData()), imageData.getSize());
+        } else if (imageHandle >= 0) {
+            nvgDeleteImage(nvg, imageHandle);
+            imageHandle = -1;
+        }
 
-        auto const max = std::max(crossBounds.getWidth(), crossBounds.getHeight());
-        auto const strokeWidth = std::max(max * 0.15f, 2.0f) * sizeReduction;
+        if (imageHandle >= 0) {
+            NVGpaint imgPaint = nvgImagePattern(nvg, b.getX(), b.getY(), b.getWidth(), b.getHeight(), 0.0f, imageHandle, 1.0f);
+            nvgBeginPath(nvg);
+            nvgRoundedRect(nvg, b.getX(), b.getY(), b.getWidth(), b.getHeight(), Corners::objectCornerRadius);
+            nvgFillPaint(nvg, imgPaint);
+            nvgFill(nvg);
+        } else {
+            auto const sizeReduction = std::min(1.0f, getWidth() / 20.0f);
+            float const margin = (getWidth() * 0.08f + 4.5f) * sizeReduction;
+            auto const crossBounds = getLocalBounds().toFloat().reduced(margin);
 
-        nvgBeginPath(nvg);
-        nvgMoveTo(nvg, crossBounds.getX(), crossBounds.getY());
-        nvgLineTo(nvg, crossBounds.getRight(), crossBounds.getBottom());
-        nvgMoveTo(nvg, crossBounds.getRight(), crossBounds.getY());
-        nvgLineTo(nvg, crossBounds.getX(), crossBounds.getBottom());
-        nvgStrokeColor(nvg, toggleState ? toggledColour : untoggledColour);
-        nvgStrokeWidth(nvg, strokeWidth);
-        nvgStroke(nvg);
+            auto const max = std::max(crossBounds.getWidth(), crossBounds.getHeight());
+            auto const strokeWidth = std::max(max * 0.15f, 2.0f) * sizeReduction;
+
+            nvgBeginPath(nvg);
+            nvgMoveTo(nvg, crossBounds.getX(), crossBounds.getY());
+            nvgLineTo(nvg, crossBounds.getRight(), crossBounds.getBottom());
+            nvgMoveTo(nvg, crossBounds.getRight(), crossBounds.getY());
+            nvgLineTo(nvg, crossBounds.getX(), crossBounds.getBottom());
+            nvgStrokeColor(nvg, toggleState ? toggledColour : untoggledColour);
+            nvgStrokeWidth(nvg, strokeWidth);
+            nvgStroke(nvg);
+        }
     }
 
     void toggleObject(Point<int> position) override
@@ -216,6 +249,18 @@ public:
             if (auto toggle = ptr.get<t_toggle>()) {
                 toggle->x_nonzero = val;
             }
+        } else if (value.refersToSameSourceAs(imageProperty)) {
+            auto const& imgPath = imageProperty.toString();
+            if (auto toggle = ptr.get<t_toggle>())
+                toggle->x_image = imgPath.isEmpty() ? nullptr : pd->generateSymbol(imgPath);
+            imageData.reset();
+            // ponytail: don't set imageHandle = -1 here, render() will delete the old GPU texture
+            if (!imgPath.isEmpty()) {
+                File imgFile(imgPath);
+                if (imgFile.existsAsFile())
+                    imgFile.loadFileAsData(imageData);
+            }
+            repaint();
         } else {
             iemHelper.valueChanged(value);
         }

@@ -283,6 +283,8 @@ public:
 
     // returns raw value, is assumed to be scaled if using log
     float getValue() const noexcept;
+    float getMin() const noexcept;
+    float getMax() const noexcept;
 
     // NOTE: value is assumed to be scaled if using log
     virtual bool setValue(float value, bool sendCallback = false) noexcept;

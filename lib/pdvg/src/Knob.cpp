@@ -24,6 +24,13 @@ PDKnob::PDKnob(NanoSubWidget *parent, PDKnobEventHandler::Callback *const cb)
     fFontId = interId;
 }
 
+PDKnob::~PDKnob()
+{
+    NVGcontext* nvg = getContext();
+    if (nvg != nullptr && imageHandle >= 0)
+        nvgDeleteImage(nvg, imageHandle);
+}
+
 void PDKnob::drawTicks(NVGcontext* nvg, DGL::Rectangle<float> pBounds, float startAngle, float endAngle, float tickWidth)
 {
     auto const centerX = pBounds.getX() + pBounds.getWidth() / 2.0f;
@@ -100,7 +107,8 @@ void PDKnob::drawKnob(NVGcontext* nvg, DGL::Rectangle<float> pBounds)
     nvgLineCap(nvg, NVG_ROUND);
     nvgStroke(nvg);
 
-    drawTicks(nvg, bounds, startAngle, endAngle, lineThickness);
+    if (showTicks)
+        drawTicks(nvg, bounds, startAngle, endAngle, lineThickness);
 }
 
 void PDKnob::onNanoDisplay()
@@ -115,15 +123,32 @@ void PDKnob::onNanoDisplay()
 
         drawRoundedRect(nvg, b.getX(), b.getY(), b.getWidth(), b.getHeight(), bgColor, Colors::outColor, Corners::objectCornerRadius);
 
-        if (!showArc) {
+        if (imageHandle >= 0)
+        {
+            const DGL::Rectangle<float> area = reduceRectangle(b, 2.0f);
+            NVGpaint imgPaint = nvgImagePattern(nvg,
+                area.getX(), area.getY(),
+                area.getWidth(), area.getHeight(),
+                0.0f, imageHandle, 1.0f);
             nvgBeginPath(nvg);
-            nvgStrokeWidth(nvg, lineThickness);
-            nvgStrokeColor(nvg, arcColor);
-            nvgCircle(nvg, b.getX() + b.getWidth() / 2.0f, b.getY() + b.getHeight() / 2.0f, b.getWidth() / 2.7f);
-            nvgStroke(nvg);
+            nvgRoundedRect(nvg, area.getX(), area.getY(),
+                           area.getWidth(), area.getHeight(),
+                           Corners::objectCornerRadius);
+            nvgFillPaint(nvg, imgPaint);
+            nvgFill(nvg);
         }
+        else
+        {
+            if (!showArc) {
+                nvgBeginPath(nvg);
+                nvgStrokeWidth(nvg, lineThickness);
+                nvgStrokeColor(nvg, arcColor);
+                nvgCircle(nvg, b.getX() + b.getWidth() / 2.0f, b.getY() + b.getHeight() / 2.0f, b.getWidth() / 2.7f);
+                nvgStroke(nvg);
+            }
 
-        drawKnob(nvg, b);
+            drawKnob(nvg, b);
+        }
     } else {
         auto circleBounds = reduceRectangle(b, b.getWidth() * 0.13f);
         auto const lineThickness = std::max(circleBounds.getWidth() * 0.07f, 1.5f);
@@ -149,7 +174,24 @@ void PDKnob::onNanoDisplay()
         nvgStrokeColor(nvg, Colors::outColor);
         nvgStrokeWidth(nvg, 1.0f);
         nvgStroke(nvg);
-        drawKnob(nvg, b);
+
+        if (imageHandle >= 0)
+        {
+            const DGL::Rectangle<float> area = reduceRectangle(b, 2.0f);
+            NVGpaint imgPaint = nvgImagePattern(nvg,
+                area.getX(), area.getY(),
+                area.getWidth(), area.getHeight(),
+                0.0f, imageHandle, 1.0f);
+            nvgBeginPath(nvg);
+            nvgCircle(nvg, circleCenterX, circleCenterY, circleBounds.getWidth() / 2.0f);
+            nvgFillPaint(nvg, imgPaint);
+            nvgFill(nvg);
+        }
+        else
+        {
+            drawKnob(nvg, b);
+        }
+
         nvgRestore(nvg);
     }
 
@@ -231,7 +273,28 @@ bool PDKnob::onMouse(const MouseEvent &ev)
 bool PDKnob::onMotion(const MotionEvent &ev)
 {
     if (isTyping)
-        return false; // Don't pass motion events to knob handler while typing
+        return false;
+
+    if (circularDrag && isActive)
+    {
+        const Point<int> screen = getScreenPos();
+        const double x = ev.pos.getX() - screen.getX();
+        const double y = ev.pos.getY() - screen.getY();
+        const float cx = getWidth() * 0.5f;
+        const float cy = getHeight() * 0.5f;
+        const float dx = x - cx;
+        const float dy = y - cy;
+        const float startAngle = arcBegin - NVG_PI * 0.5f;
+        const float endAngle = arcEnd - NVG_PI * 0.5f;
+        float angle = std::atan2(dy, dx);
+        while (angle < startAngle)
+            angle += NVG_PI * 2.0f;
+        const float normalized = clamp((angle - startAngle) / (endAngle - startAngle), 0.0f, 1.0f);
+        const float range = getMax() - getMin();
+        setValue(getMin() + normalized * range, true);
+        return true;
+    }
+
     return PDKnobEventHandler::motionEvent(ev);
 }
 
@@ -356,6 +419,48 @@ void PDKnob::setShowArc(bool showArc) {
 
 void PDKnob::setShowLabel(LabelShow showLabel) {
     this->showLabel = showLabel;
+}
+
+void PDKnob::setImageData(const unsigned char* data, uint32_t width, uint32_t height)
+{
+    NVGcontext* nvg = getContext();
+    if (nvg == nullptr)
+        return;
+
+    if (imageHandle >= 0)
+    {
+        nvgDeleteImage(nvg, imageHandle);
+        imageHandle = -1;
+    }
+
+    if (data != nullptr && width > 0 && height > 0)
+    {
+        imageHandle = nvgCreateImageRGBA(nvg, width, height, 0, data);
+        imgWidth = width;
+        imgHeight = height;
+    }
+    repaint();
+}
+
+void PDKnob::setImageFromMemory(const unsigned char* fileData, uint32_t fileSize)
+{
+    NVGcontext* nvg = getContext();
+    if (nvg == nullptr)
+        return;
+
+    if (imageHandle >= 0)
+    {
+        nvgDeleteImage(nvg, imageHandle);
+        imageHandle = -1;
+    }
+
+    if (fileData != nullptr && fileSize > 0)
+    {
+        imageHandle = nvgCreateImageMem(nvg, 0, fileData, fileSize);
+        if (imageHandle >= 0)
+            nvgImageSize(nvg, imageHandle, (int*)&imgWidth, (int*)&imgHeight);
+    }
+    repaint();
 }
 
 

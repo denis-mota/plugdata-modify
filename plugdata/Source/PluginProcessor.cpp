@@ -1422,10 +1422,10 @@ void PluginProcessor::setStateInformation(void const* data, int const sizeInByte
 
     auto const xmlSize = istream.readInt();
 
-    auto* xmlData = new char[xmlSize];
-    istream.read(xmlData, xmlSize);
+    auto xmlData = std::make_unique<char[]>(xmlSize);
+    istream.read(xmlData.get(), xmlSize);
 
-    std::unique_ptr<XmlElement> const xmlState(getXmlFromBinary(xmlData, xmlSize));
+    std::unique_ptr<XmlElement> const xmlState(getXmlFromBinary(xmlData.get(), xmlSize));
 
     jassert(xmlState);
 
@@ -1534,8 +1534,6 @@ void PluginProcessor::setStateInformation(void const* data, int const sizeInByte
     }
 
     audioLock.exit();
-
-    delete[] xmlData;
 
     if (auto* editor = dynamic_cast<PluginEditor*>(getActiveEditor())) {
         editor->getTabComponent().triggerAsyncUpdate();

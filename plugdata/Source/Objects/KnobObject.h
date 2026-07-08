@@ -245,6 +245,19 @@ public:
         return isInverted;
     }
 
+    // ponytail: expose angle for image rotation
+    float getCurrentAngle() const
+    {
+        auto sliderPos = value;
+        if (isInfinite) {
+            sliderPos -= std::numeric_limits<float>::epsilon();
+            sliderPos = sliderPos - std::floor(sliderPos);
+        }
+        auto const startAngle = arcBegin - MathConstants<float>::pi * 0.5f;
+        auto const endAngle = arcEnd - MathConstants<float>::pi * 0.5f;
+        return jmap<float>(sliderPos, startAngle, endAngle);
+    }
+
     void render(NVGcontext* nvg) override
     {
         auto const bounds = getLocalBounds().toFloat().reduced(getWidth() * 0.14f);
@@ -395,6 +408,10 @@ class KnobObject final : public ObjectBase {
 
     Value sizeProperty = SynchronousValue();
     Value transparent = SynchronousValue();
+    Value imageProperty = SynchronousValue();
+
+    int imageHandle = -1;
+    MemoryBlock imageData;
 
     NVGcolor bgCol;
 
@@ -463,6 +480,7 @@ public:
         objectParameters.addParamBool("Square", cAppearance, &square, { "No", "Yes" }, 1);
         objectParameters.addParamBool("Show arc", cAppearance, &showArc, { "No", "Yes" }, 1);
         objectParameters.addParamBool("Transparent", cAppearance, &transparent, { "No", "Yes" }, 0);
+        objectParameters.addParamString("Image", cAppearance, &imageProperty, "");
     }
 
     void onConstrainerCreate() override
@@ -579,6 +597,7 @@ public:
             numberSize = knb->n_size;
             readOnly = knb->x_readonly;
             jumpOnClick = knb->x_jump;
+            imageProperty = knb->x_image ? String::fromUTF8(knb->x_image->s_name) : "";
 
             showNumber = knb->x_number_mode + 1;
             numberPosition = VarArray(knb->x_xpos, knb->x_ypos);
@@ -613,6 +632,16 @@ public:
 
         updateColours();
         object->updateIolets();
+
+        // Load image directly since updateProperties() suppresses callbacks
+        auto const& imgPath = imageProperty.toString();
+        imageData.reset();
+        // ponytail: don't set imageHandle = -1 here, render() will delete the old GPU texture
+        if (!imgPath.isEmpty()) {
+            File imgFile(imgPath);
+            if (imgFile.existsAsFile())
+                imgFile.loadFileAsData(imageData);
+        }
     }
 
     bool hideInlet() override
@@ -881,6 +910,8 @@ public:
     {
         auto const b = getLocalBounds().toFloat();
 
+        auto const knobAngle = knob.getCurrentAngle();
+
         auto const background = ::getValue<bool>(transparent) ? nvgRGBA(0, 0, 0, 0) : bgCol;
         if (::getValue<bool>(square)) {
             bool const selected = object->isSelected() && !cnv->isGraph;
@@ -889,15 +920,39 @@ public:
 
             nvgDrawRoundedRect(nvg, b.getX(), b.getY(), b.getWidth(), b.getHeight(), background, outlineColour, Corners::objectCornerRadius);
 
-            if (!::getValue<bool>(showArc)) {
-                nvgBeginPath(nvg);
-                nvgStrokeWidth(nvg, lineThickness);
-                nvgStrokeColor(nvg, nvgColour(::getValue<Colour>(arcColour)));
-                nvgCircle(nvg, b.getCentreX(), b.getCentreY(), b.getWidth() / 2.7f);
-                nvgStroke(nvg);
+            if (!imageData.isEmpty()) {
+                if (imageHandle >= 0)
+                    nvgDeleteImage(nvg, imageHandle);
+                imageHandle = nvgCreateImageMem(nvg, 0, reinterpret_cast<unsigned char*>(imageData.getData()), imageData.getSize());
+            } else if (imageHandle >= 0) {
+                nvgDeleteImage(nvg, imageHandle);
+                imageHandle = -1;
             }
 
-            knob.render(nvg);
+            if (imageHandle >= 0) {
+                auto const area = b.reduced(2.0f);
+                // ponytail: rotate image around knob centre using NVG transforms
+                nvgSave(nvg);
+                nvgTranslate(nvg, b.getCentreX(), b.getCentreY());
+                nvgRotate(nvg, knobAngle);
+                nvgTranslate(nvg, -b.getCentreX(), -b.getCentreY());
+                NVGpaint imgPaint = nvgImagePattern(nvg, area.getX(), area.getY(), area.getWidth(), area.getHeight(), 0.0f, imageHandle, 1.0f);
+                nvgBeginPath(nvg);
+                nvgRoundedRect(nvg, area.getX(), area.getY(), area.getWidth(), area.getHeight(), Corners::objectCornerRadius);
+                nvgFillPaint(nvg, imgPaint);
+                nvgFill(nvg);
+                nvgRestore(nvg);
+            } else {
+                if (!::getValue<bool>(showArc)) {
+                    nvgBeginPath(nvg);
+                    nvgStrokeWidth(nvg, lineThickness);
+                    nvgStrokeColor(nvg, nvgColour(::getValue<Colour>(arcColour)));
+                    nvgCircle(nvg, b.getCentreX(), b.getCentreY(), b.getWidth() / 2.7f);
+                    nvgStroke(nvg);
+                }
+
+                knob.render(nvg);
+            }
         } else {
             auto circleBounds = getLocalBounds().toFloat().reduced(getWidth() * 0.13f);
             auto const lineThickness = std::max(circleBounds.getWidth() * 0.07f, 1.5f);
@@ -921,7 +976,31 @@ public:
             nvgStrokeWidth(nvg, 1.0f);
             nvgStroke(nvg);
 
-            knob.render(nvg);
+            if (!imageData.isEmpty()) {
+                if (imageHandle >= 0)
+                    nvgDeleteImage(nvg, imageHandle);
+                imageHandle = nvgCreateImageMem(nvg, 0, reinterpret_cast<unsigned char*>(imageData.getData()), imageData.getSize());
+            } else if (imageHandle >= 0) {
+                nvgDeleteImage(nvg, imageHandle);
+                imageHandle = -1;
+            }
+
+            if (imageHandle >= 0) {
+                auto const area = b.reduced(2.0f);
+                // ponytail: rotate image around knob centre using NVG transforms
+                nvgSave(nvg);
+                nvgTranslate(nvg, circleBounds.getCentreX(), circleBounds.getCentreY());
+                nvgRotate(nvg, knobAngle);
+                nvgTranslate(nvg, -circleBounds.getCentreX(), -circleBounds.getCentreY());
+                NVGpaint imgPaint = nvgImagePattern(nvg, area.getX(), area.getY(), area.getWidth(), area.getHeight(), 0.0f, imageHandle, 1.0f);
+                nvgBeginPath(nvg);
+                nvgCircle(nvg, circleBounds.getCentreX(), circleBounds.getCentreY(), circleBounds.getWidth() / 2.0f);
+                nvgFillPaint(nvg, imgPaint);
+                nvgFill(nvg);
+                nvgRestore(nvg);
+            } else {
+                knob.render(nvg);
+            }
         }
     }
 
@@ -1279,6 +1358,18 @@ public:
             if (auto knb = ptr.get<t_fake_knob>())
                 knb->x_jump = ::getValue<bool>(jumpOnClick);
             knob.setJumpOnClick(::getValue<bool>(jumpOnClick));
+        } else if (value.refersToSameSourceAs(imageProperty)) {
+            auto const& imgPath = imageProperty.toString();
+            if (auto knb = ptr.get<t_fake_knob>())
+                knb->x_image = imgPath.isEmpty() ? nullptr : pd->generateSymbol(imgPath);
+            imageData.reset();
+            // ponytail: don't set imageHandle = -1 here, render() will delete the old GPU texture
+            if (!imgPath.isEmpty()) {
+                File imgFile(imgPath);
+                if (imgFile.existsAsFile())
+                    imgFile.loadFileAsData(imageData);
+            }
+            repaint();
         } else if (value.refersToSameSourceAs(parameterName)) {
             if (auto knb = ptr.get<t_fake_knob>()) {
                 if (parameterName.toString().isEmpty()) {

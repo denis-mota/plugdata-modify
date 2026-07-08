@@ -55,6 +55,8 @@ public:
     using VisibleCanvasArray = SmallArray<Canvas*, 2>;
     VisibleCanvasArray getVisibleCanvases();
 
+    void setPendingPluginModeResize(Rectangle<int> const& bounds) { pendingPluginModeResize = bounds; }
+
 private:
     void clearCanvases();
     void handleAsyncUpdate() override;
@@ -96,6 +98,7 @@ private:
 
     StackArray<pd::Patch*, 2> lastSplitPatches { nullptr, nullptr };
     t_glist* lastActiveCanvas = nullptr;
+    Rectangle<int> pendingPluginModeResize; // ponytail: deferred window resize from closePluginMode
 
     bool draggingOverTabbar = false;
     bool draggingSplitResizer = false;

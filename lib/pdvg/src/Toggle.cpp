@@ -17,6 +17,13 @@ PDToggle::PDToggle(NanoSubWidget *const parent, PDToggleEventHandler::Callback *
     PDToggleEventHandler::setCallback(cb);
 }
 
+PDToggle::~PDToggle()
+{
+    NVGcontext* nvg = getContext();
+    if (nvg != nullptr && imageHandle >= 0)
+        nvgDeleteImage(nvg, imageHandle);
+}
+
 void PDToggle::onNanoDisplay()
 {
     const float scaleFactor = getTopLevelWidget()->getScaleFactor();
@@ -30,21 +37,38 @@ void PDToggle::onNanoDisplay()
 
     drawRoundedRect(nvg, b.getX(), b.getY(), b.getWidth(), b.getHeight(), bgColor, Colors::outColor, Corners::objectCornerRadius * scaleFactor);
 
-    auto const sizeReduction = std::min(1.0f, b.getWidth() / (20.0f * scaleFactor));
-    float const margin = (b.getWidth() * 0.08f + 4.5f * scaleFactor) * sizeReduction;
-    auto const crossB = reduceRectangle(b, margin);
+    if (imageHandle >= 0)
+    {
+        const DGL::Rectangle<float> area = reduceRectangle(b, 1.0f * scaleFactor);
+        NVGpaint imgPaint = nvgImagePattern(nvg,
+            area.getX(), area.getY(),
+            area.getWidth(), area.getHeight(),
+            0.0f, imageHandle, 1.0f);
+        nvgBeginPath(nvg);
+        nvgRoundedRect(nvg, area.getX(), area.getY(),
+                       area.getWidth(), area.getHeight(),
+                       Corners::objectCornerRadius * scaleFactor);
+        nvgFillPaint(nvg, imgPaint);
+        nvgFill(nvg);
+    }
+    else
+    {
+        auto const sizeReduction = std::min(1.0f, b.getWidth() / (20.0f * scaleFactor));
+        float const margin = (b.getWidth() * 0.08f + 4.5f * scaleFactor) * sizeReduction;
+        auto const crossB = reduceRectangle(b, margin);
 
-    auto const max = std::max(crossB.getWidth(), crossB.getHeight());
-    auto const strokeWidth = std::max(max * 0.15f, 2.0f * scaleFactor) * sizeReduction;
+        auto const max = std::max(crossB.getWidth(), crossB.getHeight());
+        auto const strokeWidth = std::max(max * 0.15f, 2.0f * scaleFactor) * sizeReduction;
 
-    nvgBeginPath(nvg);
-    nvgMoveTo(nvg, crossB.getX(), crossB.getY());
-    nvgLineTo(nvg, crossB.getX() + crossB.getWidth(), crossB.getY() + crossB.getHeight());
-    nvgMoveTo(nvg, crossB.getX() + crossB.getWidth(), crossB.getY());
-    nvgLineTo(nvg, crossB.getX(), crossB.getY() + crossB.getHeight());
-    nvgStrokeColor(nvg, val ? toggledColor : untoggledColor);
-    nvgStrokeWidth(nvg, strokeWidth);
-    nvgStroke(nvg);
+        nvgBeginPath(nvg);
+        nvgMoveTo(nvg, crossB.getX(), crossB.getY());
+        nvgLineTo(nvg, crossB.getX() + crossB.getWidth(), crossB.getY() + crossB.getHeight());
+        nvgMoveTo(nvg, crossB.getX() + crossB.getWidth(), crossB.getY());
+        nvgLineTo(nvg, crossB.getX(), crossB.getY() + crossB.getHeight());
+        nvgStrokeColor(nvg, val ? toggledColor : untoggledColor);
+        nvgStrokeWidth(nvg, strokeWidth);
+        nvgStroke(nvg);
+    }
 }
 
 bool PDToggle::onMouse(const MouseEvent &ev)
@@ -64,6 +88,27 @@ void PDToggle::setLabel(std::string text, NVGcolor textColor, int x, int y, int 
     this->label->setColors(textColor);
     this->label->setAbsolutePos(x, (y - size / 2));
     this->label->setSize(size * text.length(), size);
+}
+
+void PDToggle::setImageFromMemory(const unsigned char* fileData, uint32_t fileSize)
+{
+    NVGcontext* nvg = getContext();
+    if (nvg == nullptr)
+        return;
+
+    if (imageHandle >= 0)
+    {
+        nvgDeleteImage(nvg, imageHandle);
+        imageHandle = -1;
+    }
+
+    if (fileData != nullptr && fileSize > 0)
+    {
+        imageHandle = nvgCreateImageMem(nvg, 0, fileData, fileSize);
+        if (imageHandle >= 0)
+            nvgImageSize(nvg, imageHandle, (int*)&imgWidth, (int*)&imgHeight);
+    }
+    repaint();
 }
 
 END_NAMESPACE_DISTRHO

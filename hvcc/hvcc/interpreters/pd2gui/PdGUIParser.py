@@ -354,6 +354,9 @@ class PdGUIParser(PdParser):
             font_size=int(line[14]) + 2
         ) if line[10] != "empty" else None
 
+        # optional image_path as extra argument after label_color (index 17)
+        image_path = line[17] if len(line) > 17 and line[17] not in ("empty", "") else None
+
         return Canvas(
             id=f"canvas{self.object_counter['canvas']}",
             position=Coords(
@@ -365,7 +368,8 @@ class PdGUIParser(PdParser):
                 x=int(line[6]),
                 y=int(line[7])
             ),
-            bg_color=Color(line[15])
+            bg_color=Color(line[15]),
+            image_path=image_path
         )
 
     @classmethod
@@ -431,7 +435,8 @@ class PdGUIParser(PdParser):
             label=label,
             bg_color=Color(line[14]),
             fg_color=Color(line[15]),
-            non_zero=float(line[18])
+            non_zero=float(line[18]),
+            image_path=line[19] if len(line) > 19 and line[19] not in ("empty", "") else None
         )
 
     @classmethod
@@ -534,6 +539,18 @@ class PdGUIParser(PdParser):
         else:
             log_mode = "exp"
 
+        # ELSE knob has 31 positional args (indices 5-35 in line), image at index 36
+        # Also scan for -image flag in named-args format
+        image_path = None
+        if len(line) > 36 and line[36] not in ("empty", "") and not line[36].startswith("-"):
+            image_path = line[36]
+        else:
+            # scan for -image flag
+            for i in range(5, len(line) - 1):
+                if line[i] == "-image" and line[i + 1] not in ("empty", ""):
+                    image_path = line[i + 1]
+                    break
+
         return Knob(
             position=Coords(
                 x=int(line[2]),
@@ -567,7 +584,8 @@ class PdGUIParser(PdParser):
             square=bool(int(line[15])),
             arc_color=Color(line[13]),
             arc_start=float(line[23]),
-            arc_show=bool(int(line[19]))
+            arc_show=bool(int(line[19])),
+            image_path=image_path
         )
 
     @classmethod

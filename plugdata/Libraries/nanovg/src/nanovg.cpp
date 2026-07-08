@@ -31,6 +31,9 @@
 #define FONTSTASH_IMPLEMENTATION
 #include "fontstash.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #ifdef _MSC_VER
 #pragma warning(disable: 4100)  // unreferenced formal parameter
 #pragma warning(disable: 4127)  // conditional expression is constant
@@ -929,6 +932,33 @@ void nvgImageSize(NVGcontext* ctx, int image, int* w, int* h)
 void nvgDeleteImage(NVGcontext* ctx, int image)
 {
     nvg__renderDeleteTexture(ctx->backend, image);
+}
+
+int nvgCreateImageMem(NVGcontext* ctx, int imageFlags, unsigned char* data, int ndata)
+{
+    int w, h, n;
+    unsigned char* img = stbi_load_from_memory(data, ndata, &w, &h, &n, 4);
+    if (img == NULL) return -1;
+    // Convert RGBA to BGRA (GL_BGRA format used by NVG_TEXTURE_ARGB)
+    for (int i = 0; i < w * h * 4; i += 4) {
+        unsigned char tmp = img[i]; img[i] = img[i+2]; img[i+2] = tmp;
+    }
+    int handle = nvgCreateImageARGB(ctx, w, h, imageFlags, img);
+    stbi_image_free(img);
+    return handle;
+}
+
+int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags)
+{
+    int w, h, n;
+    unsigned char* img = stbi_load(filename, &w, &h, &n, 4);
+    if (img == NULL) return -1;
+    for (int i = 0; i < w * h * 4; i += 4) {
+        unsigned char tmp = img[i]; img[i] = img[i+2]; img[i+2] = tmp;
+    }
+    int handle = nvgCreateImageARGB(ctx, w, h, imageFlags, img);
+    stbi_image_free(img);
+    return handle;
 }
 
 NVGpaint nvgDoubleStroke(NVGcontext* ctx, NVGcolor icol, NVGcolor ocol, NVGcolor dashCol, float dashSize, bool isGradientStroke, bool showActivity, float activityOffset)

@@ -125,6 +125,7 @@ typedef struct _knob{
     char            x_tag_sel[32];
     char            x_tag_number[32];
     char            x_buf[MAX_NUMBOX_LEN]; // number buffer
+    t_symbol       *x_image; // image path
     t_symbol       *x_ignore;
     int             x_ignore_int;
     t_symbol       *x_bindname;
@@ -984,7 +985,7 @@ static void knob_save(t_gobj *z, t_binbuf *b){
     knob_get_rcv(x);
     if(x->x_savestate)
         x->x_load = x->x_fval;
-    binbuf_addv(b, "iffffsssssiiiiiiiifssiiiiiiiiii", // 31 args
+    binbuf_addv(b, "iffffsssssiiiiiiiifssiiiiiiiiiis", // 32 args
         x->x_size, // 01: i SIZE
         (float)x->x_lower, // 02: f lower
         (float)x->x_upper, // 03: f upper
@@ -1015,7 +1016,8 @@ static void knob_save(t_gobj *z, t_binbuf *b){
         x->x_ticks, // 28: i show ticks
         x->x_readonly, // 29: i read only
         x->x_theme, // 30: i color theme
-        x->x_transparent); // 31: i transparent background
+        x->x_transparent, // 31: i transparent background
+        x->x_image ? x->x_image : gensym("empty")); // 32: s image path
     binbuf_addv(b, ";");
 }
 
@@ -2294,6 +2296,7 @@ static void *knob_new(t_symbol *s, int ac, t_atom *av){
     x->x_var_set = x->x_v_flag = 0;
     x->x_snd_set = x->x_s_flag = 0;
     x->x_rcv_set = x->x_r_flag = 0;
+    x->x_image = NULL;
     if(ac){
         if(av->a_type == A_FLOAT){
             size = atom_getintarg(0, ac, av); // 01: i SIZE
@@ -2327,6 +2330,17 @@ static void *knob_new(t_symbol *s, int ac, t_atom *av){
             x->x_readonly = atom_getintarg(28, ac, av); // 29: read only
             x->x_theme = atom_getintarg(29, ac, av); // 30: color theme
             x->x_transparent = atom_getintarg(30, ac, av); // 31: transparent
+            // image may follow as arg 32 (symbol) or as -image flag
+            if(ac > 31 && av[31].a_type == A_SYMBOL)
+                x->x_image = atom_getsymbol(av + 31);
+            // scan remaining args for -image flag
+            for(int i = 31; i < ac - 1; i++){
+                if(av[i].a_type == A_SYMBOL && av[i].a_w.w_symbol == gensym("-image")){
+                    if(av[i+1].a_type == A_SYMBOL)
+                        x->x_image = av[i+1].a_w.w_symbol;
+                    break;
+                }
+            }
         }
         else{
             while(ac){
@@ -2528,6 +2542,19 @@ static void *knob_new(t_symbol *s, int ac, t_atom *av){
                 else if(sym == gensym("-savestate")){
                     x->x_flag = 1, av++, ac--;
                     x->x_savestate = 1;
+                }
+                else if(sym == gensym("-image")){
+                    if(ac >= 2){
+                        x->x_flag = 1, av++, ac--;
+                        if(av->a_type == A_SYMBOL){
+                            x->x_image = atom_getsymbol(av);
+                            av++, ac--;
+                        }
+                        else
+                            goto errstate;
+                    }
+                    else
+                        goto errstate;
                 }
                 else if(sym == gensym("-noloadbang")){
                     x->x_flag = 1, av++, ac--;

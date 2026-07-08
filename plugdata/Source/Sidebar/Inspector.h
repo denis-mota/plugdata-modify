@@ -107,7 +107,8 @@ public:
 
     void visibilityChanged() override
     {
-        showParameters();
+        if (isVisible())
+            showParameters();
     }
 
     void paint(Graphics& g) override

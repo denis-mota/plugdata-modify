@@ -74,6 +74,7 @@ class Canvas(BaseUI):
     type: Literal["canvas"] = "canvas"
     label: Optional[Label] = None
     bg_color: Color
+    image_path: Optional[str] = None
 
 
 class Bang(BaseParam):
@@ -90,6 +91,7 @@ class Toggle(BaseParam):
     fg_color: Color
     bg_color: Color
     non_zero: float
+    image_path: Optional[str] = None
 
 
 class Radio(BaseParam):
@@ -148,6 +150,7 @@ class Knob(BaseParam):
     arc_color: Color
     arc_start: float
     arc_show: bool
+    image_path: Optional[str] = None
 
 
 class Number(BaseParam):

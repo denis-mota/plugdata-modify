@@ -1598,6 +1598,16 @@ float PDKnobEventHandler::getValue() const noexcept
     return pData->value;
 }
 
+float PDKnobEventHandler::getMin() const noexcept
+{
+    return pData->minimum;
+}
+
+float PDKnobEventHandler::getMax() const noexcept
+{
+    return pData->maximum;
+}
+
 bool PDKnobEventHandler::setValue(const float value, const bool sendCallback) noexcept
 {
     return pData->setValue(value, sendCallback);

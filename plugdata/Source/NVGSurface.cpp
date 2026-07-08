@@ -207,9 +207,10 @@ void NVGSurface::detachContext()
             invalidFBO = nullptr;
         }
         if (nvg) {
-            nvgDeleteContext(nvg);
+            auto* ctx = nvg; // ponytail: save before null, erase was hitting nullptr
+            nvgDeleteContext(ctx);
             nvg = nullptr;
-            surfaces.erase(nvg);
+            surfaces.erase(ctx);
         }
 
 #ifdef NANOVG_METAL_IMPLEMENTATION

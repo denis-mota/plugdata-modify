@@ -229,6 +229,7 @@ typedef struct _toggle
     t_iemgui x_gui;
     t_float    x_on;
     t_float    x_nonzero;
+    t_symbol* x_image; // image path
 } t_toggle;
 
 typedef struct _my_canvas
@@ -237,6 +238,7 @@ typedef struct _my_canvas
     t_atom   x_at[3];
     int      x_vis_w;
     int      x_vis_h;
+    t_symbol* x_image; // image path
 } t_my_canvas;
 
 

@@ -9,6 +9,7 @@ class CanvasObject final : public ObjectBase {
 
     Value sizeProperty = SynchronousValue();
     Value hitAreaSize = SynchronousValue();
+    Value imageProperty = SynchronousValue();
     Rectangle<float> hitArea;
     bool hideHitArea = false;
     IEMHelper iemHelper;
@@ -16,6 +17,9 @@ class CanvasObject final : public ObjectBase {
     Colour bgColour;
     NVGcolor bgCol;
     NVGcolor selectionAreaCol;
+
+    int imageHandle = -1;
+    MemoryBlock imageData;
 
 public:
     CanvasObject(pd::WeakReference ptr, Object* object)
@@ -34,6 +38,7 @@ public:
         objectParameters.addParamInt("Active area size", ParameterCategory::cDimensions, &hitAreaSize, 15);
         objectParameters.addParamColour("Background", cGeneral, &iemHelper.secondaryColour, PlugDataColour::guiObjectInternalOutlineColourId);
         iemHelper.addIemParameters(objectParameters, false, true, false, 20, 12, 14);
+        objectParameters.addParamString("Image", cAppearance, &imageProperty, "");
         setRepaintsOnMouseActivity(true);
     }
 
@@ -96,6 +101,7 @@ public:
     {
         if (auto cnvObj = ptr.get<t_my_canvas>()) {
             sizeProperty = VarArray { var(cnvObj->x_vis_w), var(cnvObj->x_vis_h) };
+            imageProperty = cnvObj->x_image ? String::fromUTF8(cnvObj->x_image->s_name) : "";
         }
 
         if (auto iemgui = ptr.get<t_iemgui>()) {
@@ -103,6 +109,16 @@ public:
         }
 
         iemHelper.update();
+
+        // Load image directly since updateProperties() suppresses callbacks
+        auto const& imgPath = imageProperty.toString();
+        imageData.reset();
+        // ponytail: don't set imageHandle = -1 here, render() will delete the old GPU texture
+        if (!imgPath.isEmpty()) {
+            File imgFile(imgPath);
+            if (imgFile.existsAsFile())
+                imgFile.loadFileAsData(imageData);
+        }
     }
 
     Rectangle<int> getSelectableBounds() override
@@ -175,6 +191,23 @@ public:
         auto const b = getLocalBounds().toFloat();
         nvgDrawRoundedRect(nvg, b.getX(), b.getY(), b.getWidth(), b.getHeight(), bgCol, bgCol, Corners::objectCornerRadius);
 
+        if (!imageData.isEmpty()) {
+            if (imageHandle >= 0)
+                nvgDeleteImage(nvg, imageHandle);
+            imageHandle = nvgCreateImageMem(nvg, 0, reinterpret_cast<unsigned char*>(imageData.getData()), imageData.getSize());
+        } else if (imageHandle >= 0) {
+            nvgDeleteImage(nvg, imageHandle);
+            imageHandle = -1;
+        }
+
+        if (imageHandle >= 0) {
+            NVGpaint imgPaint = nvgImagePattern(nvg, b.getX(), b.getY(), b.getWidth(), b.getHeight(), 0.0f, imageHandle, 1.0f);
+            nvgBeginPath(nvg);
+            nvgRoundedRect(nvg, b.getX(), b.getY(), b.getWidth(), b.getHeight(), Corners::objectCornerRadius);
+            nvgFillPaint(nvg, imgPaint);
+            nvgFill(nvg);
+        }
+
         if (!cnv->isGraph && !getValue<bool>(object->locked) && !getValue<bool>(object->commandLocked) && !hideHitArea) {
             auto const selectionRectColour = object->isSelected() || isMouseOver() ? nvgColour(PlugDataColours::objectSelectedOutlineColour) : selectionAreaCol;
             nvgDrawRoundedRect(nvg, hitArea.getX(), hitArea.getY(), hitArea.getWidth(), hitArea.getHeight(), nvgRGBA(0, 0, 0, 0), selectionRectColour, Corners::objectCornerRadius);
@@ -206,6 +239,18 @@ public:
                 iemgui->x_h = size;
             }
             updateHitArea();
+        } else if (v.refersToSameSourceAs(imageProperty)) {
+            auto const& imgPath = imageProperty.toString();
+            if (auto cnvObj = ptr.get<t_my_canvas>())
+                cnvObj->x_image = imgPath.isEmpty() ? nullptr : pd->generateSymbol(imgPath);
+            imageData.reset();
+            // ponytail: don't set imageHandle = -1 here, render() will delete the old GPU texture
+            if (!imgPath.isEmpty()) {
+                File imgFile(imgPath);
+                if (imgFile.existsAsFile())
+                    imgFile.loadFileAsData(imageData);
+            }
+            repaint();
         } else {
             iemHelper.valueChanged(v);
         }
