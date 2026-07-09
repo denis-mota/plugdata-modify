@@ -107,7 +107,7 @@ def internal_expr(exp: str) -> str:
     """ Convert function names to C or internal names
     """
     internal: List[Tuple[str, str]] = [
-        (r"\\,",           ","),
+        (r"\\+,",           ","),
         (r"\bfact(?=\()",  "expr_fact"),
         (r"\bimodf(?=\()", "expr_imodf"),
     ]

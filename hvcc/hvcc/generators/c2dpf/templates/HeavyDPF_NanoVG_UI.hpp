@@ -2,12 +2,24 @@
 
 #include "DistrhoUI.hpp"
 #include "DistrhoPluginInfo.h"
+#include "HeavyDPF_{{name}}.hpp"
 #include "nanovg.h"
 
 #include "pdvg.hpp"
 
 
 START_NAMESPACE_DISTRHO
+
+enum ParamID {
+    {%- for type in widgets.keys() %}
+        {%- for widget in widgets[type] %}
+            {%- if type not in ['graph', 'canvas', 'comment'] %}
+    k{{widget|c_id|capitalize}},
+            {%- endif %}
+        {%- endfor %}
+    {%- endfor %}
+    kNumParams
+};
 
 class {{class_name}} : public UI,
                              public PDSliderEventHandler::Callback,
@@ -56,7 +68,7 @@ private:
             {%- elif type == 'float' %}
                 {%- set object = 'PDFloat' %}
             {%- endif %}
-    ScopedPointer<{{object}}> {{widget}};
+    ScopedPointer<{{object}}> {{widget|c_id}};
         {%- endfor %}
     {%- endfor %}
 

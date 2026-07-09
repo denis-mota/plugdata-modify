@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import jinja2
+import os
 import shutil
 import time
 
@@ -91,6 +92,22 @@ class c2dpf(Generator):
             source_dir = Path(out_dir, "source")
             shutil.copytree(c_src_dir, source_dir)
 
+            # create dpf/pdvg symlinks at output root for the build system
+            output_root = out_dir.parent
+            for name in ("dpf", "pdvg"):
+                link = output_root / name
+                if not link.exists():
+                    # ponytail: find via dpf_path meta or HVCC_TOOLCHAIN env
+                    toolchain = os.environ.get("HVCC_TOOLCHAIN")
+                    if toolchain:
+                        target = Path(toolchain) / name
+                    elif dpf_path:
+                        target = Path(dpf_path) / name
+                    else:
+                        target = Path(__file__).resolve().parents[5] / "Toolchain" / name
+                    if target.is_dir():
+                        link.symlink_to(target)
+
             if dpf_meta.enable_ui == DPFUIType.NANOVG:
                 gui_json = open_gui_json(patch_name, c_src_dir)
                 dpf_meta.ui_size = DPFUISize(
@@ -101,6 +118,7 @@ class c2dpf(Generator):
             # initialize the jinja template environment
             env = jinja2.Environment()
             env.filters["uniqueid"] = filter_uniqueid
+            env.filters["c_id"] = lambda s: f"_{s}" if s[0].isdigit() else s
 
             env.loader = jinja2.FileSystemLoader(Path(__file__).parent / "templates")
 

@@ -66,7 +66,8 @@ class SignalExpr(HeavyObject):
         """
 
         lines = []
-        expr = args["expressions"][0]
+        import re
+        expr = re.sub(r"\\+", ",", args["expressions"][0])
         expr_parser = ExprCWriter(expr)
         expr_lines = expr_parser.to_c_simd("bIns", "bOut")[:-1]
         expr_line = "\n".join(

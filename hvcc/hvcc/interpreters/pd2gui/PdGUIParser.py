@@ -407,7 +407,15 @@ class PdGUIParser(PdParser):
 
     @classmethod
     def add_toggle(cls, line: list[str]) -> Optional[Toggle]:
+        # Try Heavy-annotated param first, fall back to raw send name
         param = cls.filter_params(line[8])
+        if param is None:
+            param = cls.filter_params(line[7])
+        if param is None:
+            # Accept non-Heavy params for GUI rendering (use send name as ID)
+            raw = line[7] if line[7] not in ("empty", "") else line[8]
+            if raw not in ("empty", ""):
+                param = raw
         if param is None:
             return None
 
@@ -527,6 +535,11 @@ class PdGUIParser(PdParser):
         param = cls.filter_params(line[24])
         if param is None:
             param = cls.filter_params(line[10])
+        if param is None:
+            # Accept non-Heavy params for GUI rendering (use send name as ID)
+            raw = line[10] if line[10] not in ("empty", "") else line[24]
+            if raw not in ("empty", ""):
+                param = raw
         if param is None:
             return None
 

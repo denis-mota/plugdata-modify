@@ -12,8 +12,19 @@ def open_gui_json(
     c_src_dir: Path,
 ) -> GraphRoot:
 
-    # load GUI from json file
-    gui_json_path = Path(c_src_dir, "../ir/", f"{patch_name}.heavy.gui.json")
+    # load GUI from json file (glob to handle name mismatch between pd2gui output and c2dpf input)
+    ir_dir = Path(c_src_dir, "../ir/")
+    gui_json_files = list(ir_dir.glob("*.heavy.gui.json"))
+    if not gui_json_files:
+        raise FileNotFoundError(f"No GUI JSON found in {ir_dir}")
+    # prefer the file matching patch_name, else use the most recent
+    gui_json_path = None
+    for f in gui_json_files:
+        if f.stem.startswith(patch_name):
+            gui_json_path = f
+            break
+    if gui_json_path is None:
+        gui_json_path = max(gui_json_files, key=lambda f: f.stat().st_mtime)
     with open(gui_json_path, "r") as f:
         gui_json = GraphRoot(**json.load(f))
 
@@ -34,6 +45,69 @@ def load_image_bytes(image_path: Path) -> tuple[list[str], str] | None:
     return hex_strings, var_name
 
 
+def ensure_gui_params(recv_list: list, gui_json: GraphRoot):
+    """ Ensure GUI widget parameters exist in recv_list and have correct attributes.
+        Adds missing params. Updates existing toggle/radio to type="bool" for setDown().
+    """
+    existing_params = {v.display: v for _, v in recv_list}
+
+    from hvcc.types.IR import IRSendMessage
+    from hvcc.types.GUI import Toggle, VRadio, HRadio
+
+    def is_bool_type(widget_type):
+        if isinstance(widget_type, type) and issubclass(widget_type, (Toggle, VRadio, HRadio)):
+            return True
+        if widget_type in ("toggle", "vradio", "hradio"):
+            return True
+        return False
+
+    def get_param_type(widget_type):
+        if isinstance(widget_type, type):
+            if issubclass(widget_type, Toggle):
+                return "toggle"
+            if issubclass(widget_type, (VRadio, HRadio)):
+                return "radio"
+        if widget_type == "toggle":
+            return "toggle"
+        if widget_type in ("vradio", "hradio"):
+            return "radio"
+        return "knob"
+
+    def ensure_recv(param_name: str, min_val: float = 0.0, max_val: float = 1.0, widget_type: str = "knob"):
+        if not param_name:
+            return
+        param_type = get_param_type(widget_type)
+        if param_name in existing_params:
+            # update existing entry: set param type for correct UI method call
+            existing_params[param_name].attributes = {
+                **(existing_params[param_name].attributes or {}),
+                "type": param_type
+            }
+        else:
+            attrs = {"min": min_val, "max": max_val, "default": 0.0, "type": param_type}
+            recv_list.append((param_name, IRSendMessage(
+                id=param_name,
+                onMessage=[],
+                display=param_name,
+                attributes=attrs,
+                extern=""  # real param, send to Heavy
+            )))
+            existing_params[param_name] = recv_list[-1][1]
+
+    def collect_params(objects):
+        for w in objects:
+            if isinstance(w, (Canvas, Comment)):
+                continue
+            if hasattr(w, 'parameter') and w.parameter:
+                mn = getattr(w, 'min', 0.0) or 0.0
+                mx = getattr(w, 'max', 1.0) or 1.0
+                ensure_recv(w.parameter, min_val=mn, max_val=mx, widget_type=w.type)
+
+    collect_params(gui_json.objects)
+    for g in gui_json.graphs:
+        collect_params(g.objects)
+
+
 def nanovg_render(
     patch_name: str,
     c_src_dir: Path,
@@ -48,6 +122,9 @@ def nanovg_render(
     """ Generate nanovg components from the GUI json
     """
     gui_json = open_gui_json(patch_name, c_src_dir)
+
+    # ensure GUI widget types are set correctly for parameterChanged callbacks
+    ensure_gui_params(recv_list, gui_json)
 
     # widget overview
     widgets: dict[str, list[str]] = {

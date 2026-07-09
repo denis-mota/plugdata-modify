@@ -172,7 +172,7 @@ void {{class_name}}::setOutputParameter(uint32_t sendHash, const HvMessage *m)
   switch (sendHash) {
     {% for k, v in senders -%}
     case {{v.hash}}: // {{v.display}}
-      _parameters[param{{v.display}}] = hv_msg_getFloat(m, 0);
+      _parameters[param{{v.display|capitalize}}] = hv_msg_getFloat(m, 0);
       break;
     {% endfor %}
   }
