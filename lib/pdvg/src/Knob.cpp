@@ -125,17 +125,31 @@ void PDKnob::onNanoDisplay()
 
         if (imageHandle >= 0)
         {
+            auto const normVal = getNormalizedValue();
+            auto startAngle = arcBegin - NVG_PI * 0.5f;
+            auto const endAngle = arcEnd - NVG_PI * 0.5f;
+            auto const angle = jmap<float>(normVal, startAngle, endAngle);
+
+            auto const cx = b.getWidth() * 0.5f;
+            auto const cy = b.getHeight() * 0.5f;
+
+            nvgSave(nvg);
+            nvgTranslate(nvg, cx, cy);
+            nvgRotate(nvg, angle);
+
             const DGL::Rectangle<float> area = reduceRectangle(b, 2.0f);
             NVGpaint imgPaint = nvgImagePattern(nvg,
-                area.getX(), area.getY(),
+                -cx + area.getX(), -cy + area.getY(),
                 area.getWidth(), area.getHeight(),
                 0.0f, imageHandle, 1.0f);
             nvgBeginPath(nvg);
-            nvgRoundedRect(nvg, area.getX(), area.getY(),
+            nvgRoundedRect(nvg, -cx + area.getX(), -cy + area.getY(),
                            area.getWidth(), area.getHeight(),
                            Corners::objectCornerRadius);
             nvgFillPaint(nvg, imgPaint);
             nvgFill(nvg);
+
+            nvgRestore(nvg);
         }
         else
         {
@@ -177,15 +191,29 @@ void PDKnob::onNanoDisplay()
 
         if (imageHandle >= 0)
         {
+            auto const normVal = getNormalizedValue();
+            auto startAngle = arcBegin - NVG_PI * 0.5f;
+            auto const endAngle = arcEnd - NVG_PI * 0.5f;
+            auto const angle = jmap<float>(normVal, startAngle, endAngle);
+
+            auto const cx = b.getWidth() * 0.5f;
+            auto const cy = b.getHeight() * 0.5f;
+
+            nvgSave(nvg);
+            nvgTranslate(nvg, cx, cy);
+            nvgRotate(nvg, angle);
+
             const DGL::Rectangle<float> area = reduceRectangle(b, 2.0f);
             NVGpaint imgPaint = nvgImagePattern(nvg,
-                area.getX(), area.getY(),
+                -cx + area.getX(), -cy + area.getY(),
                 area.getWidth(), area.getHeight(),
                 0.0f, imageHandle, 1.0f);
             nvgBeginPath(nvg);
-            nvgCircle(nvg, circleCenterX, circleCenterY, circleBounds.getWidth() / 2.0f);
+            nvgCircle(nvg, 0, 0, circleBounds.getWidth() / 2.0f);
             nvgFillPaint(nvg, imgPaint);
             nvgFill(nvg);
+
+            nvgRestore(nvg);
         }
         else
         {

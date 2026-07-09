@@ -39,11 +39,12 @@ void PDToggle::onNanoDisplay()
 
     if (imageHandle >= 0)
     {
+        const float alpha = val ? 1.0f : 0.3f;
         const DGL::Rectangle<float> area = reduceRectangle(b, 1.0f * scaleFactor);
         NVGpaint imgPaint = nvgImagePattern(nvg,
             area.getX(), area.getY(),
             area.getWidth(), area.getHeight(),
-            0.0f, imageHandle, 1.0f);
+            0.0f, imageHandle, alpha);
         nvgBeginPath(nvg);
         nvgRoundedRect(nvg, area.getX(), area.getY(),
                        area.getWidth(), area.getHeight(),
