@@ -75,7 +75,13 @@ static void pdnam_tilde_load(t_pdnam_tilde *x, t_symbol *s)
     std::filesystem::path path(buf);
 
     if (!std::filesystem::exists(path)) {
-        pd_error(x, "pdnam~: file not found: %s", buf);
+        t_symbol *dir = canvas_getdir(x->canvas);
+        snprintf(buf, MAXPDSTRING, "%s/%s", dir->s_name, s->s_name);
+        path = std::filesystem::path(buf);
+    }
+
+    if (!std::filesystem::exists(path)) {
+        pd_error(x, "pdnam~: file not found: %s", s->s_name);
         return;
     }
 
@@ -83,18 +89,35 @@ static void pdnam_tilde_load(t_pdnam_tilde *x, t_symbol *s)
         std::ifstream f(path);
         json data = json::parse(f);
 
+        if (data.contains("architecture") && data["architecture"] == "SlimmableContainer") {
+            std::string arch_list = "";
+            if (data.contains("config") && data["config"].contains("submodels")) {
+                for (auto& sm : data["config"]["submodels"]) {
+                    if (sm.contains("model") && sm["model"].contains("architecture")) {
+                        if (!arch_list.empty()) arch_list += ", ";
+                        arch_list += sm["model"]["architecture"].get<std::string>();
+                        arch_list += " (" + std::to_string(sm["model"]["weights"].size()) + "w)";
+                    }
+                }
+            }
+            pd_error(x, "pdnam~: SlimmableContainer format (archs: %s) - use pdnam+~ instead", arch_list.c_str());
+            return;
+        }
+
         if (data.contains("weights") && data["weights"].is_array()) {
             std::vector<float> weights = data["weights"].get<std::vector<float>>();
+            std::string arch = data.value("architecture", "unknown");
+            post("pdnam~: loading %s (%zu weights)...", arch.c_str(), weights.size());
             Model* new_model = new Model();
             new_model->load_weights(weights);
 
             if (new_model->is_loaded()) {
                 delete x->model;
                 x->model = new_model;
-                post("pdnam~: loaded model %s (%zu weights)", s->s_name, weights.size());
+                post("pdnam~: loaded OK, model pointer=%p", (void*)x->model);
             } else {
                 delete new_model;
-                pd_error(x, "pdnam~: unsupported weight count: %zu", weights.size());
+                pd_error(x, "pdnam~: %s not supported by MicroNAM (%zu weights)", arch.c_str(), weights.size());
             }
         } else {
             pd_error(x, "pdnam~: JSON missing 'weights' array");
@@ -125,6 +148,27 @@ static t_int *pdnam_tilde_perform(t_int *w)
     }
 
     return (w + 5);
+}
+
+// ponytail: one-shot diagnostic, remove after confirming fix
+static void pdnam_tilde_debug(t_pdnam_tilde *x)
+{
+    post("pdnam~: model_ptr=%p loaded=%d", (void*)x->model,
+         x->model ? x->model->is_loaded() : 0);
+    if (x->model && x->model->is_loaded()) {
+        float in_val = 0.5f, out_val = 0.f;
+        x->model->forward(&in_val, &out_val);
+        post("pdnam~: test forward: in=0.5 out=%f", out_val);
+    }
+}
+
+static void pdnam_tilde_print(t_pdnam_tilde *x)
+{
+    if (x->model && x->model->is_loaded()) {
+        post("pdnam~: model loaded, processing active");
+    } else {
+        post("pdnam~: NO MODEL LOADED (passthrough mode)");
+    }
 }
 
 static void pdnam_tilde_dsp(t_pdnam_tilde *x, t_signal **sp)
@@ -161,5 +205,11 @@ extern "C" void pdnam_tilde_setup(void) {
 
     class_addmethod(pdnam_tilde_class,
         (t_method)pdnam_tilde_dsp, gensym("dsp"), A_CANT, 0);
+    class_addmethod(pdnam_tilde_class,
+        (t_method)pdnam_tilde_load, gensym("set"), A_SYMBOL, 0);
+    class_addmethod(pdnam_tilde_class,
+        (t_method)pdnam_tilde_print, gensym("print"), A_NULL, 0);
+    class_addmethod(pdnam_tilde_class,
+        (t_method)pdnam_tilde_debug, gensym("debug"), A_NULL, 0);
     CLASS_MAINSIGNALIN(pdnam_tilde_class, t_pdnam_tilde, f);
 }

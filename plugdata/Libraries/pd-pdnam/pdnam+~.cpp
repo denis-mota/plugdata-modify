@@ -6,8 +6,11 @@
 #include "m_pd.h"
 #include "g_canvas.h"
 #include "NeuralAudio/NeuralModel.h"
+#include "nlohmann/json.hpp"
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <filesystem>
 
 static t_class *pdnam_plus_tilde_class;
@@ -28,18 +31,71 @@ static void pdnam_plus_tilde_load(t_pdnam_plus_tilde *x, t_symbol *model_path)
 
     if (model_path == &s_) return;
 
-    // Resolve relative path
     char buf[MAXPDSTRING];
     canvas_makefilename(x->canvas, model_path->s_name, buf, MAXPDSTRING);
     std::filesystem::path path(buf);
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
-        pd_error(x, "pdnam+~: model file not found: %s", buf);
+        t_symbol *dir = canvas_getdir(x->canvas);
+        snprintf(buf, MAXPDSTRING, "%s/%s", dir->s_name, model_path->s_name);
+        path = std::filesystem::path(buf);
+    }
+
+    if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
+        pd_error(x, "pdnam+~: model file not found: %s", model_path->s_name);
         return;
     }
 
     try {
-        x->model = NeuralAudio::NeuralModel::CreateFromFile(path);
+        std::ifstream fileStream(path, std::ifstream::binary);
+        nlohmann::json modelJson;
+        fileStream >> modelJson;
+        fileStream.close();
+
+        std::string arch = modelJson.value("architecture", "");
+
+        if (arch == "SlimmableContainer" && modelJson.contains("config")) {
+            auto& config = modelJson["config"];
+            if (config.contains("submodels") && config["submodels"].is_array() && !config["submodels"].empty()) {
+                float bestMax = -1.0f;
+                nlohmann::json bestModel;
+
+                for (auto& sm : config["submodels"]) {
+                    if (sm.contains("max_value") && sm.contains("model")) {
+                        float mv = sm["max_value"].get<float>();
+                        if (mv > bestMax) {
+                            bestMax = mv;
+                            bestModel = sm["model"];
+                        }
+                    }
+                }
+
+                if (!bestModel.is_null() && bestModel.contains("weights") && !bestModel["weights"].empty()) {
+                    post("pdnam+~: SlimmableContainer -> %s (%zu weights, gain %.1f)",
+                         bestModel.value("architecture", "?").c_str(),
+                         bestModel["weights"].size(),
+                         bestMax);
+
+                    std::string dump = bestModel.dump();
+                    std::stringstream ss(dump);
+                    x->model = NeuralAudio::NeuralModel::CreateFromStream(ss, path.extension());
+
+                    if (!x->model) {
+                        std::string sub_arch = bestModel.value("architecture", "?");
+                        pd_error(x, "pdnam+~: %s submodel not supported by NeuralAudio", sub_arch.c_str());
+                        pd_error(x, "pdnam+~: re-export model in standard NAM format (not SlimmableContainer)");
+                    }
+                } else {
+                    pd_error(x, "pdnam+~: SlimmableContainer has no valid submodels");
+                }
+            } else {
+                pd_error(x, "pdnam+~: SlimmableContainer missing submodels");
+            }
+        } else {
+            std::ifstream freshStream(path, std::ifstream::binary);
+            x->model = NeuralAudio::NeuralModel::CreateFromStream(freshStream, path.extension());
+        }
+
         if (x->model) {
             post("pdnam+~: loaded model %s", model_path->s_name);
         } else {
@@ -98,6 +154,26 @@ void pdnam_plus_tilde_free(t_pdnam_plus_tilde *x)
     if (x->model) delete x->model;
 }
 
+static void pdnam_plus_tilde_print(t_pdnam_plus_tilde *x)
+{
+    if (x->model) {
+        post("pdnam+~: model loaded, processing active");
+    } else {
+        post("pdnam+~: NO MODEL LOADED (passthrough mode)");
+    }
+}
+
+// ponytail: one-shot diagnostic
+static void pdnam_plus_tilde_debug(t_pdnam_plus_tilde *x)
+{
+    post("pdnam+~: model_ptr=%p", (void*)x->model);
+    if (x->model) {
+        float in_val = 0.5f, out_val = 0.f;
+        x->model->Process(&in_val, &out_val, 1);
+        post("pdnam+~: test Process: in=0.5 out=%f", out_val);
+    }
+}
+
 extern "C" void setup_pdnam0x2b_tilde(void) {
     pdnam_plus_tilde_class = class_new(gensym("pdnam+~"),
         (t_newmethod)pdnam_plus_tilde_new,
@@ -109,6 +185,12 @@ extern "C" void setup_pdnam0x2b_tilde(void) {
 
     class_addmethod(pdnam_plus_tilde_class,
         (t_method)pdnam_plus_tilde_load, gensym("set"), A_SYMBOL, 0);
+
+    class_addmethod(pdnam_plus_tilde_class,
+        (t_method)pdnam_plus_tilde_print, gensym("print"), A_NULL, 0);
+
+    class_addmethod(pdnam_plus_tilde_class,
+        (t_method)pdnam_plus_tilde_debug, gensym("debug"), A_NULL, 0);
 
 
     CLASS_MAINSIGNALIN(pdnam_plus_tilde_class, t_pdnam_plus_tilde, f);
